@@ -129,7 +129,8 @@ public class Character : MonoBehaviour
     void Start()
     {   
         OnDamageTaken += (args) => ApplyDamage(args.Damage, args.StatusEffects);
-        CalculateStats();
+        OnDamageTaken += (args) => RecalculateStats();
+        RecalculateStats();
         Health = MaxHealth;
         Mana = MaxMana;
         Energy = MaxEnergy;
@@ -139,8 +140,12 @@ public class Character : MonoBehaviour
     {
         Debugging();
         CalculateGrounded();
-        CalculateStatusEffects();
-        CalculateStats();
+        CalculateStatusEffectsTimings();
+        ConstantlyCalculatingStats();
+    }
+
+    void FixedUpdate()
+    {
         CalculateFall();
     }
 
@@ -209,6 +214,7 @@ public class Character : MonoBehaviour
                 };
             _appliedStatusEffects.Add(newStatusEffect);
         }
+        RecalculateStats();
     }
 
     public void RemoveStatusEffect(StatusEffect statusEffect)
@@ -228,6 +234,7 @@ public class Character : MonoBehaviour
         {
             _appliedStatusEffects.RemoveAt(index);
         }
+        RecalculateStats();
     }
 
     public void RemoveStatusEffect(AppliedStatusEffect appliedStatusEffect)
@@ -247,15 +254,20 @@ public class Character : MonoBehaviour
         {
             _appliedStatusEffects.RemoveAt(index);
         }
+        RecalculateStats();
     }
 
-    void CalculateStatusEffects()
+    void CalculateStatusEffectsTimings()
     {
         foreach (var appliedStatusEffect in _appliedStatusEffects)
         {
             foreach (var repeatedStatAffector in appliedStatusEffect.StatusEffect.RepeatedStatAffectors)
             {
                 appliedStatusEffect.StatusEffect.RepeatedStatAffectors[repeatedStatAffector.Key] -= Time.deltaTime;
+                if (appliedStatusEffect.StatusEffect.RepeatedStatAffectors[repeatedStatAffector.Key] <= 0f)
+                {
+                    RecalculateStats();
+                }
             }
             
             if (appliedStatusEffect.TimeLeft == -1f) continue;
@@ -267,7 +279,24 @@ public class Character : MonoBehaviour
         }
     }
 
-    void CalculateStats()
+    void ConstantlyCalculatingStats()
+    {
+        Health += HealthRegen * Time.deltaTime;
+        Mana += ManaRegen * Time.deltaTime;
+        Energy += EnergyRegen * Time.deltaTime;
+
+        if (Health > MaxHealth){
+            Health = MaxHealth;
+        }
+        if (Mana > MaxMana){
+            Mana = MaxMana;
+        }
+        if (Energy > MaxEnergy){
+            Energy = MaxEnergy;
+        }
+    }
+
+    public void RecalculateStats()
     {
         Strength = baseStrength;
         Agility = baseAgility;
@@ -360,20 +389,6 @@ public class Character : MonoBehaviour
                         break;
                 }
             }
-        }
-
-        Health += HealthRegen * Time.deltaTime;
-        Mana += ManaRegen * Time.deltaTime;
-        Energy += EnergyRegen * Time.deltaTime;
-
-        if (Health > MaxHealth){
-            Health = MaxHealth;
-        }
-        if (Mana > MaxMana){
-            Mana = MaxMana;
-        }
-        if (Energy > MaxEnergy){
-            Energy = MaxEnergy;
         }
     }
 
@@ -471,21 +486,21 @@ public class Character : MonoBehaviour
     void CalculateFall()
     {
         var ray = new Ray(transform.position, Vector3.down);
-        Physics.Raycast(ray, out var hit, 100000f);
-        var currentDistanceToGround = hit.distance;
-        if (_previousDistanceToGround == 0){
-            _previousDistanceToGround = currentDistanceToGround;
-        }
-
-        if (((currentDistanceToGround < _previousDistanceToGround) || (currentDistanceToGround == _previousDistanceToGround)) 
-        && _reachedJumpApex == false)
-        {
-            _reachedJumpApex = true;
-        }
-        var differenceBetweenDistances = Mathf.Abs(_previousDistanceToGround - currentDistanceToGround);
-        _previousDistanceToGround = currentDistanceToGround;
 
         if (IsGrounded == false){
+            Physics.Raycast(ray, out var hit, 100000f);
+            var currentDistanceToGround = hit.distance;
+            if (_previousDistanceToGround == 0){
+                _previousDistanceToGround = currentDistanceToGround;
+            }
+    
+            if (((currentDistanceToGround < _previousDistanceToGround) || (currentDistanceToGround == _previousDistanceToGround)) 
+            && _reachedJumpApex == false)
+            {
+                _reachedJumpApex = true;
+            }
+            var differenceBetweenDistances = Mathf.Abs(_previousDistanceToGround - currentDistanceToGround);
+            _previousDistanceToGround = currentDistanceToGround;
             if (_reachedJumpApex)
             {
                 _distanceFallen += Mathf.Abs(differenceBetweenDistances); 
