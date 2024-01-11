@@ -53,6 +53,8 @@ public class UIManager : MonoBehaviour
         {
             Instance = this;
         }
+
+        DontDestroyOnLoad(gameObject);
     }
 
     void Update()
