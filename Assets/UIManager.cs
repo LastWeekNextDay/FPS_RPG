@@ -61,7 +61,13 @@ public class UIManager : MonoBehaviour
     {
         if (_character == null)
         {
-            _character = GameObject.FindWithTag("Player").GetComponent<Character>();
+            var character = GameObject.FindWithTag("Player");
+            if (character == null)
+            {
+                return;
+            } else {
+                _character = character.GetComponent<Character>();
+            }
         } else {
             UpdateInventoryStats();
             UpdateHealthBar();
