@@ -26,5 +26,4 @@ public class Weapon : MonoBehaviour
     public float baseAttackTime;
     public Sprite itemIcon;
     [NonSerialized] public Character Wielder;
-    
 }

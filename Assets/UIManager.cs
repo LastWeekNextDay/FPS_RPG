@@ -516,7 +516,6 @@ public class UIManager : MonoBehaviour
         }
         return -1;
     }
-    
 
     public bool TryToAddToSlotUI(ItemSlot itemSlot, InventoryItem item)
     {
