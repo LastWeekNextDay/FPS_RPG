@@ -130,6 +130,7 @@ public class Character : MonoBehaviour
     {   
         OnDamageTaken += (args) => ApplyDamage(args.Damage, args.StatusEffects);
         OnDamageTaken += (args) => RecalculateStats();
+        OnDamageTaken += (args) => AudioManager.Instance.PlayHurtSound(audioSource);
         RecalculateStats();
         Health = MaxHealth;
         Mana = MaxMana;
@@ -171,6 +172,7 @@ public class Character : MonoBehaviour
     {
         if (IsGrounded && Energy > _jumpEnergy && _justJumped == false)
         {
+            AudioManager.Instance.PlayJumpSound(audioSource);
             rigidBody.velocity = new Vector3(rigidBody.velocity.x, 0f, rigidBody.velocity.z);
             rigidBody.AddForce(transform.up * JumpForce, ForceMode.Impulse);
             Energy -= _jumpEnergy;

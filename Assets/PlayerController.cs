@@ -86,6 +86,7 @@ public class PlayerController : MonoBehaviour
                     switch(hit.collider.tag)
                     {
                         case "Item":
+                            AudioManager.Instance.PlayPickupItemSound();
                             var invItem = UIManager.Instance.MakeItemIntoInventoryItem(item);
                             character.backpack.TryAddItem(invItem);
                             break;

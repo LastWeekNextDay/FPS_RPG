@@ -82,6 +82,7 @@ public class InventoryItem : MonoBehaviour
         isSelected = true;
         transform.SetParent(_canvasObject.transform);
         transform.SetSiblingIndex(transform.parent.childCount - 1);
+        AudioManager.Instance.PlayPickupInventoryItemSound();
     }
 
     public void FollowMouse()
@@ -110,6 +111,7 @@ public class InventoryItem : MonoBehaviour
                 continue;
             }
             if (hit.gameObject.layer == LayerMask.NameToLayer("ItemSlot")){
+                AudioManager.Instance.PlayPickupInventoryItemSound();
                 var slot = hit.gameObject.GetComponent<ItemSlot>();
                 if (slot != null)
                 {
@@ -127,6 +129,7 @@ public class InventoryItem : MonoBehaviour
                 return;
             }
             if (hit.gameObject.layer == LayerMask.NameToLayer("UI")){
+                AudioManager.Instance.PlayCancelInventoryItemPickupSound();
                 slotAttachedTo.Attach(this);
                 return;
             }
@@ -141,6 +144,7 @@ public class InventoryItem : MonoBehaviour
             delta.Normalize();
             worldPosition = Camera.main.transform.position + delta;
         }
+        AudioManager.Instance.PlayDropItemSound();
         SetActiveInWorld(true, worldPosition);
         DestroyInventoryItem();
     }
