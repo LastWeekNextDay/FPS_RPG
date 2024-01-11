@@ -116,6 +116,7 @@ public class InventoryItem : MonoBehaviour
                 {
                     if (slot.item == null)
                     {
+                        slotAttachedTo.Detach();
                         slot.Attach(this);
                         player.GetComponent<Character>().backpack.TryChangeItemPosition(
                             this, UIManager.Instance.GetSlotUINumber(UIManager.Instance.GetPlayerBackpackUI(), slot));
