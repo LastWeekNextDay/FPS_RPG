@@ -30,6 +30,14 @@ public class PlayerController : MonoBehaviour
         OnSecondaryAction += () => {
             UIManager.Instance.ToggleInventory();
             UIManager.Instance.AllowCursor(UIManager.Instance.IsInventoryOpen);
+            if (UIManager.Instance.IsInventoryOpen)
+            {
+                Time.timeScale = 0f;
+            }
+            else
+            {
+                Time.timeScale = 1f;
+            }
         };
 
         OnUseAction += () => {
