@@ -12,6 +12,8 @@ public class PlayerController : MonoBehaviour
     public Action<GameObject> OnItemPickup;
     public Action OnSecondaryAction;
     public Action OnUseAction;
+    public Action OnWeaponPullout;
+    public Action OnWeaponPutaway;
 
     void Awake()
     {
@@ -23,8 +25,8 @@ public class PlayerController : MonoBehaviour
         _localEulerAngles = playerCamera.transform.localEulerAngles;
         OnItemPickup += (obj) => {
             AudioManager.Instance.PlayPickupItemSound();
-            var invItem = UIManager.Instance.MakeItemIntoInventoryItem(obj);
-            character.backpack.TryAddItem(invItem);
+            var invItem = UIManager.Instance.MakeObjectIntoInventoryItem(obj);
+            character.Backpack.TryAddItem(invItem);
         };
 
         OnSecondaryAction += () => {
@@ -56,6 +58,14 @@ public class PlayerController : MonoBehaviour
                     }
                 }
             }
+        };
+
+        OnWeaponPullout += () => {
+            character.PullOutWeapon();
+        };
+
+        OnWeaponPutaway += () => {
+            character.PutAwayWeapon();
         };
     }
 
@@ -116,6 +126,22 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKeyUp(KeyCode.E))
         {
             OnUseAction?.Invoke();
+        }
+        if (Input.GetKeyUp(KeyCode.R))
+        {
+            if (character.Equipment.WeaponInventoryItem == null)
+            {
+                if (PrefabContainer.Instance.TryGetPrefab("Fists", out var fistsPrefab))
+                {
+                    var fists = Instantiate(fistsPrefab, character.transform.position, Quaternion.identity);
+                    var fistsInvItem = UIManager.Instance.MakeObjectIntoInventoryItem(fists);
+                    character.Equipment.TryEquipWeapon(fistsInvItem);
+                }
+            }
+            if (character.Equipment.WeaponInventoryItem.RepresentedItem.GetComponent<Weapon>().IsReady == false)
+                OnWeaponPullout?.Invoke();
+            else
+                OnWeaponPutaway?.Invoke();
         }
     }
 

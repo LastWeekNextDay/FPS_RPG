@@ -15,33 +15,153 @@ public enum ItemType
 public class InventoryItem : MonoBehaviour
 {
     [NonSerialized] public ItemType itemType;
-    public GameObject ItemObject {get; private set;}
+    public GameObject RepresentedItem { get; private set; }
     [NonSerialized] public bool isEquipped;
     [NonSerialized] public bool isSelected;
-    [NonSerialized] public ItemSlot slotAttachedTo;
+    [NonSerialized] public InventorySlot slotAttachedTo;
     public Image imageRenderer;
     public Sprite DefaultIcon;
     private GameObject _canvasObject;
     public Action OnMouseAttach;
-    public Action OnAttachToSlot;
+    public Action<InventorySlot> OnAttachToSlot;
     public Action OnCancelSelection;
-    public Action OnDrop;
+    public Action<Vector3> OnDrop;
+    public Action<InventorySlot> OnEquip;
+    public Action<InventorySlot> OnUnequip;
+
+    private GameObject _player;
+    private GameObject Player {
+        get {
+            if (_player == null)
+            {
+                _player = GameObject.Find("Player");
+            }
+            return _player;
+        }
+    }
 
     void Start()
     {
         _canvasObject = GameObject.Find("Canvas");
         OnMouseAttach += () => AudioManager.Instance.PlayPickupInventoryItemSound();
-        OnAttachToSlot += () => AudioManager.Instance.PlayPickupInventoryItemSound();
-        OnCancelSelection += () => AudioManager.Instance.PlayCancelInventoryItemPickupSound();
-        OnDrop += () => AudioManager.Instance.PlayDropItemSound();
+
+        OnAttachToSlot += (slot) => 
+        {
+            AudioManager.Instance.PlayPickupInventoryItemSound();
+            if (slot != null)
+            {
+                if (slot.item == null || slot.item.RepresentedItem.GetComponent<Weapon>().weaponName == "Fists")
+                {
+                    if (slot.isEquipmentSlot){
+                        if (slot.name == "Weapon1Holder")
+                        {
+                            var weapon = RepresentedItem.GetComponent<Weapon>();
+                            if (weapon == null)
+                            {
+                                OnCancelSelection?.Invoke();
+                                return;
+                            }
+                            if (Player.GetComponent<Character>().Equipment.WeaponInventoryItem != null){
+                                if (Player.GetComponent<Character>().Equipment.WeaponInventoryItem.RepresentedItem.GetComponent<Weapon>().weaponName == "Fists")
+                                {
+                                    Destroy(Player.GetComponent<Character>().Equipment.WeaponInventoryItem.RepresentedItem);
+                                    Destroy(Player.GetComponent<Character>().Equipment.WeaponInventoryItem);
+                                }
+                            }
+                            if (Player.GetComponent<Character>().Equipment.WeaponInventoryItem == null)
+                            {
+                                OnEquip?.Invoke(slot);
+                                return;
+                            }
+                            if (weapon.IsTwoHanded == false)
+                            {
+                                // TODO: Special checkif two handed.
+                            }
+                            return; 
+                        }  
+                    } else {
+                        if (slotAttachedTo.isEquipmentSlot)
+                        {
+                            OnUnequip?.Invoke(slotAttachedTo);
+                        }
+                        slot.Attach(this);
+                        Player.GetComponent<Character>().Backpack.TryChangeItemPosition(
+                            this, UIManager.Instance.GetBackpackSlotUINumber(UIManager.Instance.GetPlayerBackpackUI(), slot));
+                    }
+                    return; 
+                } else {
+                    OnCancelSelection?.Invoke();
+                }
+            }
+        };
+
+        OnCancelSelection += () => 
+        {
+            AudioManager.Instance.PlayCancelInventoryItemPickupSound(); 
+            slotAttachedTo.Attach(this);
+        };
+
+        OnDrop += (pos) => 
+        {
+            AudioManager.Instance.PlayDropItemSound();
+            var rb = RepresentedItem.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.useGravity = true;
+                rb.isKinematic = false;
+            }
+            var collider = RepresentedItem.GetComponent<Collider>();
+            if (collider != null)
+            {
+                collider.isTrigger = false;
+            }
+            SetActiveInWorld(true, pos);
+            DestroyInventoryItem();
+            Player.GetComponent<Character>().Backpack.TryRemoveItem(this);
+        }; 
+
+        OnEquip += (slot) => 
+        {
+            var character = Player.GetComponent<Character>();
+            if (character.Equipment.TryEquipWeapon(this) == false)
+            {
+                OnCancelSelection?.Invoke();
+                return;
+            }
+            slotAttachedTo.Detach();
+            slot.Attach(this);
+            Player.GetComponent<Character>().Backpack.TryRemoveItem(this);
+        };
+
+        OnUnequip += (slot) => 
+        {
+            var character = Player.GetComponent<Character>();
+            if (character.Equipment.TryUnequipWeapon(this) == false)
+            {
+                OnCancelSelection?.Invoke();
+                return;
+            }
+            slotAttachedTo.Detach();
+        };
     }
 
     public void AttachObjectAsInventoryItem(GameObject itemObject)
     {
-        ItemObject = itemObject;
+        RepresentedItem = itemObject;
         itemObject.transform.SetParent(transform);
         itemObject.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
         itemObject.transform.localScale = Vector3.one;
+        var rb = itemObject.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.useGravity = false;
+            rb.isKinematic = true;
+        }
+        var collider = itemObject.GetComponent<Collider>();
+        if (collider != null)
+        {
+            collider.isTrigger = true;
+        }
         itemObject.SetActive(false);
 
         Sprite image = null;
@@ -59,28 +179,29 @@ public class InventoryItem : MonoBehaviour
         imageRenderer.sprite = image;     
     }
 
-    public void SetActiveInWorld(bool active, Vector3 pos = default)
+    public void SetActiveInWorld(bool active, Vector3 pos = default, Transform parent = null)
     {
-        if (ItemObject != null)
+        if (RepresentedItem != null)
         {
             if (active)
             {
-                ItemObject.transform.position = pos;
+                RepresentedItem.transform.position = pos;
             }
             else
             {
-                ItemObject.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+                RepresentedItem.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
             }
-            ItemObject.SetActive(active);
+            RepresentedItem.SetActive(active);
+            RepresentedItem.transform.SetParent(parent);
         }   
     }
 
     public void DestroyInventoryItem()
     {
-        if (ItemObject != null)
+        if (RepresentedItem != null)
         {
-            ItemObject.transform.SetParent(null);
-            ItemObject = null;
+            RepresentedItem.transform.SetParent(null);
+            RepresentedItem = null;
         }
         Destroy(gameObject);
     }
@@ -102,7 +223,6 @@ public class InventoryItem : MonoBehaviour
     public void DetachFromMouse()
     {
         isSelected = false;
-        var player = GameObject.Find("Player");
         transform.SetParent(_canvasObject.transform);
         var eventSystem = GameObject.Find("EventSystem").GetComponent<EventSystem>();
         var rayCaster = _canvasObject.GetComponent<GraphicRaycaster>();
@@ -119,41 +239,27 @@ public class InventoryItem : MonoBehaviour
                 continue;
             }
             if (hit.gameObject.layer == LayerMask.NameToLayer("ItemSlot")){
-                OnAttachToSlot?.Invoke();
-                var slot = hit.gameObject.GetComponent<ItemSlot>();
-                if (slot != null)
-                {
-                    if (slot.item == null)
-                    {
-                        slotAttachedTo.Detach();
-                        slot.Attach(this);
-                        player.GetComponent<Character>().backpack.TryChangeItemPosition(
-                            this, UIManager.Instance.GetSlotUINumber(UIManager.Instance.GetPlayerBackpackUI(), slot));
-                        return;
-                    } else {
-                        slotAttachedTo.Attach(this);
-                    }
-                }
+                var slot = hit.gameObject.GetComponent<InventorySlot>();
+                OnAttachToSlot?.Invoke(slot);
                 return;
             }
             if (hit.gameObject.layer == LayerMask.NameToLayer("UI")){
                 OnCancelSelection?.Invoke();
-                slotAttachedTo.Attach(this);
                 return;
             }
         }
+
         var mousePos = Input.mousePosition;
         var delta = Camera.main.transform.forward - Camera.main.transform.position;
         mousePos.z = delta.normalized.magnitude;
         var worldPosition = Camera.main.ScreenToWorldPoint(mousePos);
-        if (Vector3.Distance(player.transform.position, worldPosition) > 1f)
+        if (Vector3.Distance(Player.transform.position, worldPosition) > 1f)
         {
             delta = worldPosition - Camera.main.transform.position;
             delta.Normalize();
             worldPosition = Camera.main.transform.position + delta;
         }
-        OnDrop?.Invoke();
-        SetActiveInWorld(true, worldPosition);
-        DestroyInventoryItem();
+
+        OnDrop?.Invoke(worldPosition);
     }
 }

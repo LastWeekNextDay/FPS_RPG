@@ -1,23 +1,55 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public class Equipment
+{
+    public InventoryItem WeaponInventoryItem;
+
+    public Equipment()
+    {
+        WeaponInventoryItem = null;
+    }
+
+    public bool TryEquipWeapon(InventoryItem item)
+    {
+        if (item.RepresentedItem.GetComponent<Weapon>() == null) return false;
+        if (WeaponInventoryItem == null || WeaponInventoryItem.RepresentedItem.GetComponent<Weapon>().weaponName == "Fists")
+        {
+            WeaponInventoryItem = item;
+            return true;
+        }
+        return false;
+    }
+
+    public bool TryUnequipWeapon(InventoryItem item)
+    {
+        if (item.RepresentedItem.GetComponent<Weapon>() == null) return false;
+        if (WeaponInventoryItem == item) 
+        {
+            WeaponInventoryItem = null;
+            return true;
+        }
+        return false;
+    }
+}
 public class Backpack
 {
-    public InventoryItem[] items;
+    public InventoryItem[] InventoryItems;
 
     public Backpack()
     {
-        items = new InventoryItem[28];
+        InventoryItems = new InventoryItem[28];
     }
 
     public bool TryAddItem(InventoryItem item)
     {
-        for (int i = 0; i < items.Length; i++)
+        for (int i = 0; i < InventoryItems.Length; i++)
         {
-            if (items[i] == null)
+            if (InventoryItems[i] == null)
             {
-                items[i] = item;
+                InventoryItems[i] = item;
                 return true;
             }
         }
@@ -26,14 +58,19 @@ public class Backpack
 
     public bool TryChangeItemPosition(InventoryItem item, int toPosition)
     {
-        InventoryItem itemToSwap;
-        for (int i = 0; i < items.Length; i++)
+        if (InventoryItems[toPosition] == null)
         {
-            if (items[i] == item)
+            InventoryItems[toPosition] = item;
+            return true;
+        }
+        InventoryItem itemToSwap;
+        for (int i = 0; i < InventoryItems.Length; i++)
+        {
+            if (InventoryItems[i] == item)
             {
-                itemToSwap = items[i];
-                items[toPosition] = itemToSwap;
-                items[i] = null;
+                itemToSwap = InventoryItems[i];
+                InventoryItems[toPosition] = itemToSwap;
+                InventoryItems[i] = null;
                 return true;
             }
         }
@@ -42,11 +79,11 @@ public class Backpack
 
     public bool TryRemoveItem(InventoryItem item)
     {
-        for (int i = 0; i < items.Length; i++)
+        for (int i = 0; i < InventoryItems.Length; i++)
         {
-            if (items[i] == item)
+            if (InventoryItems[i] == item)
             {
-                items[i] = null;
+                InventoryItems[i] = null;
                 return true;
             }
         }
@@ -55,9 +92,9 @@ public class Backpack
 
     public bool TryGetItemIndex(InventoryItem item, out int index)
     {
-        for (int i = 0; i < items.Length; i++)
+        for (int i = 0; i < InventoryItems.Length; i++)
         {
-            if (items[i] == item)
+            if (InventoryItems[i] == item)
             {
                 index = i;
                 return true;
@@ -92,8 +129,8 @@ public class Character : MonoBehaviour
     public int Intelligence { get; private set; }
 
     [Header("Character Equipment")]
-    public Weapon weapon;
-    public Backpack backpack;
+    public Backpack Backpack;
+    public Equipment Equipment;
 
     [NonSerialized] public float Health;
     [NonSerialized] public float MaxHealth;
@@ -117,6 +154,7 @@ public class Character : MonoBehaviour
     private bool _justJumped;
     private bool _reachedJumpApex;
     private List<AppliedStatusEffect> _appliedStatusEffects;
+
     public Action<DamageArgs> OnDamageTaken;
     public Action OnJump;
     public Action<StatusEffect> OnAddStatusEffect;
@@ -126,7 +164,8 @@ public class Character : MonoBehaviour
     void Awake()
     {
         _appliedStatusEffects = new();
-        backpack = new();
+        Backpack = new();
+        Equipment = new();
     }
 
     void Start()
@@ -601,5 +640,43 @@ public class Character : MonoBehaviour
         {
             Energy = MaxEnergy;
         }
+    }
+
+    public void ToggleCombatMode(bool b)
+    {
+        InCombatMode = b;
+    }
+
+    public void PullOutWeapon()
+    {
+        StartCoroutine(nameof(PullOutWeaponCoroutine));
+    }
+
+    public void PutAwayWeapon()
+    {
+        StartCoroutine(nameof(PutAwayWeaponCoroutine));
+    }
+
+    IEnumerator PullOutWeaponCoroutine()
+    {
+        var weapon = Equipment.WeaponInventoryItem.RepresentedItem.GetComponent<Weapon>();
+        yield return new WaitForSeconds(weapon.basePullOutTime);
+        weapon.IsReady = true;
+        // TODO: Add animation
+        // TODO: This is a temporary solution
+        var thisy = transform.position.y + col.bounds.extents.y / 2;
+        var pos = new Vector3(transform.position.x, thisy, transform.position.z);
+        var infront = pos + transform.forward;
+        Equipment.WeaponInventoryItem.SetActiveInWorld(true, infront, transform);
+    }
+
+    IEnumerator PutAwayWeaponCoroutine()
+    {
+        var weapon = Equipment.WeaponInventoryItem.RepresentedItem.GetComponent<Weapon>();
+        yield return new WaitForSeconds(weapon.basePullOutTime);
+        weapon.IsReady = false;
+        // TODO: Add animation
+        // TODO: This is a temporary solution
+        Equipment.WeaponInventoryItem.SetActiveInWorld(false);
     }
 }

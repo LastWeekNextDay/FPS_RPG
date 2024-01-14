@@ -1,9 +1,10 @@
 using UnityEngine;
 
-public class ItemSlot : MonoBehaviour
+public class InventorySlot : MonoBehaviour
 {
     public InventoryItem item;
     public Backpack backpack;
+    public bool isEquipmentSlot;
 
     public void Attach(InventoryItem item)
     {

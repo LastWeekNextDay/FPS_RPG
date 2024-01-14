@@ -23,7 +23,10 @@ public class Weapon : MonoBehaviour
     [NonSerialized] public float AttackSpeed;
     public float baseRange;
     public float baseWindupTime;
+    public float basePullOutTime;
     public float baseAttackTime;
     public Sprite itemIcon;
+    public bool IsTwoHanded;
     [NonSerialized] public Character Wielder;
+    [NonSerialized] public bool IsReady;
 }

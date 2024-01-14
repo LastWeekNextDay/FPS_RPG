@@ -51,4 +51,6 @@ MonoBehaviour:
   baseAttackSpeed: 1
   baseRange: 1
   baseWindupTime: 0.1
+  basePullOutTime: 0.1
   baseAttackTime: 0.2
+  itemIcon: {fileID: 0}

@@ -126,7 +126,9 @@ MonoBehaviour:
   baseAttackSpeed: 0.5
   baseRange: 1
   baseWindupTime: 0.25
+  basePullOutTime: 0.1
   baseAttackTime: 0.5
+  itemIcon: {fileID: 0}
 --- !u!114 &6048211575915775567
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -139,4 +141,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca6a2ddd4039da2439cd654931a64f57, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemIcon: {fileID: 21300000, guid: 00a98c7dd6c82eb4282ce3e5a6c81cd7, type: 3}
+  imageRenderer: {fileID: 0}
+  DefaultIcon: {fileID: 0}

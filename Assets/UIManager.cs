@@ -347,24 +347,51 @@ public class UIManager : MonoBehaviour
             {
                 if (UnityEssential.TryFindObject("Inventory", out _inventoryPanel))
                 {
-                    InventoryActivate(GetPlayerBackpackUI(), !_inventoryPanel.activeSelf);
+                    InventoryActivate(!_inventoryPanel.activeSelf);
                 }
             } else {
-                InventoryActivate(GetPlayerBackpackUI(), !_inventoryPanel.activeSelf);
+                InventoryActivate(!_inventoryPanel.activeSelf);
             }
         }
     }
 
-    void InventoryActivate(GameObject backpack, bool t)
+    void InventoryActivate(bool t)
     {
         if (t)
         {
             _inventoryPanel.SetActive(t);
-            RefreshBackpackItemsUI(backpack, _character.backpack);
+            RefreshBackpackItemsUI(GetPlayerBackpackUI(), _character.Backpack);
+            RefreshEquipmentItemsUI(GetPlayerEquipmentUI(), _character.Equipment);
         } else {
-            DetachAllItemsFromSlots(backpack);
+            DetachAllItemsFromBacpackSlots(GetPlayerBackpackUI());
+            DetachAllItemsFromEquipmentSlots(GetPlayerEquipmentUI());
             _inventoryPanel.SetActive(t);
         }
+    }
+
+    public GameObject GetPlayerEquipmentUI()
+    {
+        if (UnityEssential.TryFindObject("EquipmentBase", out GameObject equipment))
+        {
+            return equipment;
+        }
+        return null;
+    }
+
+    public InventorySlot GetPrimaryWeaponSlotUI(GameObject equipmentUI)
+    {
+        if (equipmentUI == null)
+        {
+            return null;
+        }
+        foreach (Transform child in equipmentUI.transform)
+        {
+            if (child.gameObject.name == "Weapon1Holder")
+            {
+                return child.gameObject.GetComponent<InventorySlot>();
+            }
+        }
+        return null;
     }
 
     public GameObject GetPlayerBackpackUI()
@@ -387,7 +414,7 @@ public class UIManager : MonoBehaviour
         return null;
     }
 
-    public ItemSlot GetFirstAvailableSlotUI(GameObject backpackUI)
+    public InventorySlot GetFirstAvailableBackpackSlotUI(GameObject backpackUI)
     {
         if (backpackUI == null)
         {
@@ -402,7 +429,7 @@ public class UIManager : MonoBehaviour
         {
             foreach (Transform child in row.transform)
             {
-                var slot = child.gameObject.GetComponent<ItemSlot>();
+                var slot = child.gameObject.GetComponent<InventorySlot>();
                 if (slot.item == null)
                 {
                     return slot;
@@ -428,16 +455,16 @@ public class UIManager : MonoBehaviour
         {
             foreach (Transform child in row.transform)
             {
-                var slot = child.gameObject.GetComponent<ItemSlot>();
+                var slot = child.gameObject.GetComponent<InventorySlot>();
                 slot.backpack = backpack;
-                if (backpack.items[UIIndex] != null)
+                if (backpack.InventoryItems[UIIndex] != null)
                 {
                     if (slot.item == null)
                     {
-                        slot.Attach(backpack.items[UIIndex]);
+                        slot.Attach(backpack.InventoryItems[UIIndex]);
                     }
                 }
-                else if (backpack.items[UIIndex] == null)
+                else if (backpack.InventoryItems[UIIndex] == null)
                 {
                     if (slot.item != null)
                     {
@@ -449,7 +476,38 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    void DetachAllItemsFromSlots(GameObject backpackUI)
+    void RefreshEquipmentItemsUI(GameObject equipmentUI, Equipment equipment)
+    {
+        if (equipmentUI == null || equipment == null)
+        {
+            return;
+        }
+        foreach (Transform child in equipmentUI.transform)
+        {
+            var slot = child.gameObject.GetComponent<InventorySlot>();
+            switch (slot.name)
+            {
+                case "Weapon1Holder":
+                    if (equipment.WeaponInventoryItem != null)
+                    {
+                        if (slot.item == null)
+                        {
+                            slot.Attach(equipment.WeaponInventoryItem);
+                        }
+                    }
+                    else if (equipment.WeaponInventoryItem == null)
+                    {
+                        if (slot.item != null)
+                        {
+                            slot.Detach();
+                        }
+                    }
+                    break;
+            }
+        }
+    }
+
+    void DetachAllItemsFromBacpackSlots(GameObject backpackUI)
     {
         if (backpackUI == null)
         {
@@ -464,7 +522,7 @@ public class UIManager : MonoBehaviour
         {
             foreach (Transform child in row.transform)
             {
-                var slot = child.gameObject.GetComponent<ItemSlot>();
+                var slot = child.gameObject.GetComponent<InventorySlot>();
                 if (slot.item != null)
                 {
                     slot.Detach();
@@ -473,7 +531,23 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    public ItemSlot GetSlotUI(GameObject backpackUI, int num)
+    void DetachAllItemsFromEquipmentSlots(GameObject equipmentUI)
+    {
+        if (equipmentUI == null)
+        {
+            return;
+        }
+        foreach (Transform child in equipmentUI.transform)
+        {
+            var slot = child.gameObject.GetComponent<InventorySlot>();
+            if (slot.item != null)
+            {
+                slot.Detach();
+            }
+        }
+    }
+
+    public InventorySlot GetBackpackSlotUI(GameObject backpackUI, int num)
     {
         if (backpackUI == null)
         {
@@ -491,7 +565,7 @@ public class UIManager : MonoBehaviour
             {
                 if (i == num)
                 {
-                    return child.gameObject.GetComponent<ItemSlot>();
+                    return child.gameObject.GetComponent<InventorySlot>();
                 }
                 i++;
             }
@@ -499,7 +573,7 @@ public class UIManager : MonoBehaviour
         return null;
     }
 
-    public int GetSlotUINumber(GameObject backpackUI, ItemSlot itemSlot)
+    public int GetBackpackSlotUINumber(GameObject backpackUI, InventorySlot itemSlot)
     {
         if (backpackUI == null || itemSlot == null)
         {
@@ -525,7 +599,7 @@ public class UIManager : MonoBehaviour
         return -1;
     }
 
-    public bool TryToAddToSlotUI(ItemSlot itemSlot, InventoryItem item)
+    public bool TryToAddToSlotUI(InventorySlot itemSlot, InventoryItem item)
     {
         if (itemSlot == null || item == null)
         {
@@ -539,7 +613,7 @@ public class UIManager : MonoBehaviour
         return false;
     }
 
-    public bool TryToRemoveFromSlotUI(ItemSlot itemSlot)
+    public bool TryToRemoveFromSlotUI(InventorySlot itemSlot)
     {
         if (itemSlot == null)
         {
@@ -553,7 +627,7 @@ public class UIManager : MonoBehaviour
         return false;
     }
 
-    public InventoryItem MakeItemIntoInventoryItem(GameObject itemObject)
+    public InventoryItem MakeObjectIntoInventoryItem(GameObject itemObject)
     {
         if (itemObject == null)
         {
