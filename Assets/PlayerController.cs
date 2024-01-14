@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -8,6 +9,9 @@ public class PlayerController : MonoBehaviour
     private readonly float _cameraDownLimit = 55f;
     private Vector3 _localEulerAngles;
     private float _mouseSensitivity;
+    public Action<GameObject> OnItemPickup;
+    public Action OnSecondaryAction;
+    public Action OnUseAction;
 
     void Awake()
     {
@@ -17,6 +21,34 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         _localEulerAngles = playerCamera.transform.localEulerAngles;
+        OnItemPickup += (obj) => {
+            AudioManager.Instance.PlayPickupItemSound();
+            var invItem = UIManager.Instance.MakeItemIntoInventoryItem(obj);
+            character.backpack.TryAddItem(invItem);
+        };
+
+        OnSecondaryAction += () => {
+            UIManager.Instance.ToggleInventory();
+            UIManager.Instance.AllowCursor(UIManager.Instance.IsInventoryOpen);
+        };
+
+        OnUseAction += () => {
+            var ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
+            var distance = 2f;
+            if (Physics.Raycast(ray, out var hit, distance))
+            {
+                if (hit.collider != null)
+                {
+                    var item = hit.collider.gameObject;
+                    switch(hit.collider.tag)
+                    {
+                        case "Item":
+                            OnItemPickup?.Invoke(item);
+                            break;
+                    }
+                }
+            }
+        };
     }
 
     void Update()
@@ -71,29 +103,11 @@ public class PlayerController : MonoBehaviour
     {
         if (Input.GetMouseButtonUp(1))
         {
-            UIManager.Instance.ToggleInventory();
-            UIManager.Instance.AllowCursor(UIManager.Instance.IsInventoryOpen);
+            OnSecondaryAction?.Invoke();
         }
         if (Input.GetKeyUp(KeyCode.E))
         {
-            var ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
-            var distance = 2f;
-            if (Physics.Raycast(ray, out var hit, distance))
-            {
-                if (hit.collider != null)
-                {
-                    var item = hit.collider.gameObject;
-                    switch(hit.collider.tag)
-                    {
-                        case "Item":
-                            AudioManager.Instance.PlayPickupItemSound();
-                            var invItem = UIManager.Instance.MakeItemIntoInventoryItem(item);
-                            character.backpack.TryAddItem(invItem);
-                            break;
-                    }
-                    
-                }
-            }
+            OnUseAction?.Invoke();
         }
     }
 

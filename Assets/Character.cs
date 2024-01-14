@@ -93,7 +93,6 @@ public class Character : MonoBehaviour
 
     [Header("Character Equipment")]
     public Weapon weapon;
-
     public Backpack backpack;
 
     [NonSerialized] public float Health;
@@ -119,6 +118,10 @@ public class Character : MonoBehaviour
     private bool _reachedJumpApex;
     private List<AppliedStatusEffect> _appliedStatusEffects;
     public Action<DamageArgs> OnDamageTaken;
+    public Action OnJump;
+    public Action<StatusEffect> OnAddStatusEffect;
+    public Action<StatusEffect> OnRemoveStatusEffect;
+    public Action<AppliedStatusEffect> OnRemoveAppliedStatusEffect;
 
     void Awake()
     {
@@ -128,9 +131,99 @@ public class Character : MonoBehaviour
 
     void Start()
     {   
-        OnDamageTaken += (args) => ApplyDamage(args.Damage, args.StatusEffects);
-        OnDamageTaken += (args) => RecalculateStats();
-        OnDamageTaken += (args) => AudioManager.Instance.PlayHurtSound(audioSource);
+        OnDamageTaken += (args) => { 
+            ApplyDamage(args.Damage, args.StatusEffects);
+            AudioManager.Instance.PlayHurtSound(audioSource);
+            RecalculateStats(); 
+        };
+
+        OnJump += () => {
+            if (IsGrounded && Energy > _jumpEnergy && _justJumped == false)
+            {
+                AudioManager.Instance.PlayJumpSound(audioSource);
+                rigidBody.velocity = new Vector3(rigidBody.velocity.x, 0f, rigidBody.velocity.z);
+                rigidBody.AddForce(transform.up * JumpForce, ForceMode.Impulse);
+                Energy -= _jumpEnergy;
+                _justJumped = true;
+            }
+        };
+
+        OnAddStatusEffect += (effect) => {
+            bool contains = false;
+            int index = -1;
+            foreach (var appliedStatusEffect in _appliedStatusEffects)
+            {
+                if (appliedStatusEffect.StatusEffect == effect)
+                {
+                    contains = true;
+                    index = _appliedStatusEffects.IndexOf(appliedStatusEffect);
+                    break;
+                }
+            }
+            if (contains)
+            {
+                if (effect.IsStackable == false)
+                {
+                    _appliedStatusEffects[index].TimeLeft = effect.Duration;
+                } else {
+                    var newStatusEffect = new AppliedStatusEffect
+                    {
+                        StatusEffect = effect,
+                        TimeLeft = effect.Duration
+                    };
+                    _appliedStatusEffects.Add(newStatusEffect);
+                }
+            }
+            else
+            {
+                var newStatusEffect = new AppliedStatusEffect
+                    {
+                        StatusEffect = effect,
+                        TimeLeft = effect.Duration
+                    };
+                _appliedStatusEffects.Add(newStatusEffect);
+            }
+            RecalculateStats();
+        };
+
+        OnRemoveStatusEffect += (effect) => {
+            bool contains = false;
+            int index = -1;
+            foreach (var appliedStatusEffect in _appliedStatusEffects)
+            {
+                if (appliedStatusEffect.StatusEffect == effect)
+                {
+                    contains = true;
+                    index = _appliedStatusEffects.IndexOf(appliedStatusEffect);
+                    break;
+                }
+            }
+            if (contains)
+            {
+                _appliedStatusEffects.RemoveAt(index);
+            }
+            RecalculateStats();
+        };
+
+        OnRemoveAppliedStatusEffect += (appliedStatusEffect) => {
+            bool contains = false;
+            int index = -1;
+            foreach (var statusEffect in _appliedStatusEffects)
+            {
+                if (statusEffect == appliedStatusEffect)
+                {
+                    contains = true;
+                    index = _appliedStatusEffects.IndexOf(statusEffect);
+                    break;
+                }
+            }
+            if (contains)
+            {
+                _appliedStatusEffects.RemoveAt(index);
+            }
+            RecalculateStats();
+        };
+
         RecalculateStats();
         Health = MaxHealth;
         Mana = MaxMana;
@@ -170,93 +263,22 @@ public class Character : MonoBehaviour
 
     public void Jump()
     {
-        if (IsGrounded && Energy > _jumpEnergy && _justJumped == false)
-        {
-            AudioManager.Instance.PlayJumpSound(audioSource);
-            rigidBody.velocity = new Vector3(rigidBody.velocity.x, 0f, rigidBody.velocity.z);
-            rigidBody.AddForce(transform.up * JumpForce, ForceMode.Impulse);
-            Energy -= _jumpEnergy;
-            _justJumped = true;
-        }
+        OnJump?.Invoke();
     }
 
     public void AddStatusEffect(StatusEffect statusEffect)
     {
-        bool contains = false;
-        int index = -1;
-        foreach (var appliedStatusEffect in _appliedStatusEffects)
-        {
-            if (appliedStatusEffect.StatusEffect == statusEffect)
-            {
-                contains = true;
-                index = _appliedStatusEffects.IndexOf(appliedStatusEffect);
-                break;
-            }
-        }
-        if (contains)
-        {
-            if (statusEffect.IsStackable == false)
-            {
-                _appliedStatusEffects[index].TimeLeft = statusEffect.Duration;
-            } else {
-                var newStatusEffect = new AppliedStatusEffect
-                {
-                    StatusEffect = statusEffect,
-                    TimeLeft = statusEffect.Duration
-                };
-                _appliedStatusEffects.Add(newStatusEffect);
-            }
-        }
-        else
-        {
-            var newStatusEffect = new AppliedStatusEffect
-                {
-                    StatusEffect = statusEffect,
-                    TimeLeft = statusEffect.Duration
-                };
-            _appliedStatusEffects.Add(newStatusEffect);
-        }
-        RecalculateStats();
+        OnAddStatusEffect?.Invoke(statusEffect);
     }
 
     public void RemoveStatusEffect(StatusEffect statusEffect)
     {
-        bool contains = false;
-        int index = -1;
-        foreach (var appliedStatusEffect in _appliedStatusEffects)
-        {
-            if (appliedStatusEffect.StatusEffect == statusEffect)
-            {
-                contains = true;
-                index = _appliedStatusEffects.IndexOf(appliedStatusEffect);
-                break;
-            }
-        }
-        if (contains)
-        {
-            _appliedStatusEffects.RemoveAt(index);
-        }
-        RecalculateStats();
+        OnRemoveStatusEffect?.Invoke(statusEffect);
     }
 
     public void RemoveStatusEffect(AppliedStatusEffect appliedStatusEffect)
     {
-        bool contains = false;
-        int index = -1;
-        foreach (var statusEffect in _appliedStatusEffects)
-        {
-            if (statusEffect == appliedStatusEffect)
-            {
-                contains = true;
-                index = _appliedStatusEffects.IndexOf(statusEffect);
-                break;
-            }
-        }
-        if (contains)
-        {
-            _appliedStatusEffects.RemoveAt(index);
-        }
-        RecalculateStats();
+        OnRemoveAppliedStatusEffect?.Invoke(appliedStatusEffect);
     }
 
     void CalculateStatusEffectsTimings()

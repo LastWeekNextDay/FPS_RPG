@@ -22,10 +22,18 @@ public class InventoryItem : MonoBehaviour
     public Image imageRenderer;
     public Sprite DefaultIcon;
     private GameObject _canvasObject;
+    public Action OnMouseAttach;
+    public Action OnAttachToSlot;
+    public Action OnCancelSelection;
+    public Action OnDrop;
 
     void Start()
     {
         _canvasObject = GameObject.Find("Canvas");
+        OnMouseAttach += () => AudioManager.Instance.PlayPickupInventoryItemSound();
+        OnAttachToSlot += () => AudioManager.Instance.PlayPickupInventoryItemSound();
+        OnCancelSelection += () => AudioManager.Instance.PlayCancelInventoryItemPickupSound();
+        OnDrop += () => AudioManager.Instance.PlayDropItemSound();
     }
 
     public void AttachObjectAsInventoryItem(GameObject itemObject)
@@ -82,7 +90,7 @@ public class InventoryItem : MonoBehaviour
         isSelected = true;
         transform.SetParent(_canvasObject.transform);
         transform.SetSiblingIndex(transform.parent.childCount - 1);
-        AudioManager.Instance.PlayPickupInventoryItemSound();
+        OnMouseAttach?.Invoke();
     }
 
     public void FollowMouse()
@@ -111,7 +119,7 @@ public class InventoryItem : MonoBehaviour
                 continue;
             }
             if (hit.gameObject.layer == LayerMask.NameToLayer("ItemSlot")){
-                AudioManager.Instance.PlayPickupInventoryItemSound();
+                OnAttachToSlot?.Invoke();
                 var slot = hit.gameObject.GetComponent<ItemSlot>();
                 if (slot != null)
                 {
@@ -129,7 +137,7 @@ public class InventoryItem : MonoBehaviour
                 return;
             }
             if (hit.gameObject.layer == LayerMask.NameToLayer("UI")){
-                AudioManager.Instance.PlayCancelInventoryItemPickupSound();
+                OnCancelSelection?.Invoke();
                 slotAttachedTo.Attach(this);
                 return;
             }
@@ -144,7 +152,7 @@ public class InventoryItem : MonoBehaviour
             delta.Normalize();
             worldPosition = Camera.main.transform.position + delta;
         }
-        AudioManager.Instance.PlayDropItemSound();
+        OnDrop?.Invoke();
         SetActiveInWorld(true, worldPosition);
         DestroyInventoryItem();
     }
