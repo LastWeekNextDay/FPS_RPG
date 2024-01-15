@@ -5,14 +5,14 @@ using UnityEngine;
 
 public class Equipment
 {
-    public InventoryItem WeaponInventoryItem;
+    public InventoryItemUI WeaponInventoryItem;
 
     public Equipment()
     {
         WeaponInventoryItem = null;
     }
 
-    public bool TryEquipWeapon(InventoryItem item)
+    public bool TryEquipWeapon(InventoryItemUI item)
     {
         if (item.RepresentedItem.GetComponent<Weapon>() == null) return false;
         if (WeaponInventoryItem == null || WeaponInventoryItem.RepresentedItem.GetComponent<Weapon>().weaponName == "Fists")
@@ -23,7 +23,7 @@ public class Equipment
         return false;
     }
 
-    public bool TryUnequipWeapon(InventoryItem item)
+    public bool TryUnequipWeapon(InventoryItemUI item)
     {
         if (item.RepresentedItem.GetComponent<Weapon>() == null) return false;
         if (WeaponInventoryItem == item) 
@@ -36,14 +36,14 @@ public class Equipment
 }
 public class Backpack
 {
-    public InventoryItem[] InventoryItems;
+    public InventoryItemUI[] InventoryItems;
 
     public Backpack()
     {
-        InventoryItems = new InventoryItem[28];
+        InventoryItems = new InventoryItemUI[28];
     }
 
-    public bool TryAddItem(InventoryItem item)
+    public bool TryAddItem(InventoryItemUI item)
     {
         for (int i = 0; i < InventoryItems.Length; i++)
         {
@@ -56,14 +56,14 @@ public class Backpack
         return false;
     }
 
-    public bool TryChangeItemPosition(InventoryItem item, int toPosition)
+    public bool TryChangeItemPosition(InventoryItemUI item, int toPosition)
     {
         if (InventoryItems[toPosition] == null)
         {
             InventoryItems[toPosition] = item;
             return true;
         }
-        InventoryItem itemToSwap;
+        InventoryItemUI itemToSwap;
         for (int i = 0; i < InventoryItems.Length; i++)
         {
             if (InventoryItems[i] == item)
@@ -77,7 +77,7 @@ public class Backpack
         return false;
     }
 
-    public bool TryRemoveItem(InventoryItem item)
+    public bool TryRemoveItem(InventoryItemUI item)
     {
         for (int i = 0; i < InventoryItems.Length; i++)
         {
@@ -90,7 +90,7 @@ public class Backpack
         return false;
     }
 
-    public bool TryGetItemIndex(InventoryItem item, out int index)
+    public bool TryGetItemIndex(InventoryItemUI item, out int index)
     {
         for (int i = 0; i < InventoryItems.Length; i++)
         {
