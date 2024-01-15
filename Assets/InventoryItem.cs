@@ -346,7 +346,16 @@ public class InventoryItemUI : MonoBehaviour
                 OnAttachToSlot?.Invoke(slot);
                 return;
             }
-            if (hit.gameObject.layer == LayerMask.NameToLayer("UI")){
+        }
+
+        foreach (var hit in hits)
+        {
+            if (hit.gameObject == gameObject)
+            {
+                continue;
+            }
+            if (hit.gameObject.layer == LayerMask.NameToLayer("UI"))
+            {
                 OnCancelSelection?.Invoke();
                 return;
             }
