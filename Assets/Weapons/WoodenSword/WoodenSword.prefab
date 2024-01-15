@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 6048211575915775567}
   m_Layer: 0
   m_Name: WoodenSword
-  m_TagString: Untagged
+  m_TagString: Item
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -129,6 +129,9 @@ MonoBehaviour:
   basePullOutTime: 0.1
   baseAttackTime: 0.5
   itemIcon: {fileID: 0}
+  IsTwoHanded: 0
+  IsInteractable: 1
+  IsForcefullyEquipped: 0
 --- !u!114 &6048211575915775567
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -27,6 +27,8 @@ public class Weapon : MonoBehaviour
     public float baseAttackTime;
     public Sprite itemIcon;
     public bool IsTwoHanded;
+    public bool IsInteractable;
+    public bool IsForcefullyEquipped;
     [NonSerialized] public Character Wielder;
     [NonSerialized] public bool IsReady;
 }

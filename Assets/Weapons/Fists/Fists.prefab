@@ -53,4 +53,7 @@ MonoBehaviour:
   baseWindupTime: 0.1
   basePullOutTime: 0.1
   baseAttackTime: 0.2
-  itemIcon: {fileID: 0}
+  itemIcon: {fileID: 10901, guid: 0000000000000000f000000000000000, type: 0}
+  IsTwoHanded: 0
+  IsInteractable: 0
+  IsForcefullyEquipped: 0
