@@ -31,6 +31,21 @@ public class InventoryItemUI : MonoBehaviour
             AudioManager.Instance.PlayPickupInventoryItemSound();
             var Player = GameObject.Find("Player");
             var playerChar = Player.GetComponent<Character>();
+            var itemType = RepresentedItem.ItemType;
+            switch(itemType)
+            {
+                case ItemType.Weapon:
+                    if (playerChar.Equipment.WeaponInventoryItem != null)
+                    {
+                        if (playerChar.Equipment.WeaponInventoryItem.RepresentedItem.GetComponent<Weapon>().IsAttacking ||
+                            playerChar.Equipment.WeaponInventoryItem.RepresentedItem.GetComponent<Weapon>().IsReady)
+                        {
+                            OnCancelSelection?.Invoke();
+                            return;
+                        }
+                    }
+                    break;    
+            }
             if (slotAttachedTo != null)
             {
                 if (slotAttachedTo.isEquipmentSlot)

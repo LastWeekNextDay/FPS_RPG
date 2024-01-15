@@ -555,6 +555,120 @@ public class Character : MonoBehaviour
         StartCoroutine(nameof(PutAwayWeaponCoroutine));
     }
 
+    public void AttackPrimary(Vector3 dir)
+    {
+        if (Equipment.WeaponInventoryItem == null) return;
+        var weapon = Equipment.WeaponInventoryItem.RepresentedItem.GetComponent<Weapon>();
+        if (weapon.IsReady == false) return;
+        StartCoroutine(nameof(AttackPrimaryCoroutine), dir);
+    }
+
+    IEnumerator AttackPrimaryCoroutine(Vector3 dir)
+    {
+        var weapon = Equipment.WeaponInventoryItem.RepresentedItem.GetComponent<Weapon>();
+        weapon.IsAttacking = true;
+        var middle_of_character = transform.position + col.bounds.extents.y * transform.up;
+        var ray = new Ray(middle_of_character, dir);
+        var distance = weapon.baseRange;
+        var hits = Physics.RaycastAll(ray, distance);
+        List<RaycastHit> objectsHit = new();
+        List<RaycastHit> charactersHit = new();
+        foreach (var hit in hits)
+        {
+            if (hit.collider != null)
+            {
+                switch (hit.collider.tag)
+                {
+                    case "Object":
+                        objectsHit.Add(hit);
+                        break;
+                    case "Character":
+                        charactersHit.Add(hit);
+                        break;
+                }
+            }
+        }
+        GameObject closestObjectHit = null;
+        GameObject closestCharacterHit = null;
+        foreach (var objHit in objectsHit)
+        {
+            if (closestObjectHit == null)
+            {
+                closestObjectHit = objHit.collider.gameObject;
+            }
+            else
+            {
+                var distanceToObjectHit = Vector3.Distance(middle_of_character, objHit.collider.gameObject.transform.position);
+                var distanceToClosestObjectHit = Vector3.Distance(middle_of_character, closestObjectHit.transform.position);
+                if (distanceToObjectHit < distanceToClosestObjectHit)
+                {
+                    closestObjectHit = objHit.collider.gameObject;
+                }
+            }
+        }
+        foreach (var characterHit in charactersHit)
+        {
+            if (closestCharacterHit == null)
+            {
+                closestCharacterHit = characterHit.collider.gameObject;
+            }
+            else
+            {
+                var distanceToCharacterHit = Vector3.Distance(middle_of_character, characterHit.collider.gameObject.transform.position);
+                var distanceToClosestCharacterHit = Vector3.Distance(middle_of_character, closestCharacterHit.transform.position);
+                if (distanceToCharacterHit < distanceToClosestCharacterHit)
+                {
+                    closestCharacterHit = characterHit.collider.gameObject;
+                }
+            }
+        }
+        GameObject objectHit = null;
+        if (closestCharacterHit == null){
+            if (closestObjectHit != null){
+                objectHit = closestObjectHit;
+            }
+        } else if (closestObjectHit == null){
+            if (closestCharacterHit != null){
+                objectHit = closestCharacterHit;
+            }
+        } else {
+            var distanceToObjectHit = Vector3.Distance(middle_of_character, closestObjectHit.transform.position);
+            var distanceToCharacterHit = Vector3.Distance(middle_of_character, closestCharacterHit.transform.position);
+            if (distanceToObjectHit < distanceToCharacterHit)
+            {
+                objectHit = closestObjectHit;
+            }
+            else
+            {
+                objectHit = closestCharacterHit;
+            }
+        }
+        RaycastHit finalhit = new();
+        foreach (var hit in hits)
+        {
+            if (hit.collider.gameObject == objectHit)
+            {
+                finalhit = hit;
+                break;
+            }
+        }
+        if (objectHit != null)
+        {
+            if (objectHit.TryGetComponent(out Object obj))
+            {
+                obj.GetHit(dir, finalhit.point);
+            } else if (objectHit.TryGetComponent(out Character character))
+            {
+                character.TakeDamage(new DamageArgs
+                {
+                    Damage = weapon.baseDamage,
+                });
+            }
+        }
+        yield return new WaitForSeconds(weapon.baseAttackTime);
+        weapon.IsAttacking = false;
+    }
+
     IEnumerator PullOutWeaponCoroutine()
     {
         var weapon = Equipment.WeaponInventoryItem.RepresentedItem.GetComponent<Weapon>();

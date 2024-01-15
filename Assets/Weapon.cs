@@ -28,4 +28,5 @@ public class Weapon : Item
     public bool IsTwoHanded;
     [NonSerialized] public Character Wielder;
     [NonSerialized] public bool IsReady;
+    [NonSerialized] public bool IsAttacking;
 }

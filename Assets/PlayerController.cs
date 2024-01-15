@@ -10,6 +10,7 @@ public class PlayerController : MonoBehaviour
     private Vector3 _localEulerAngles;
     private float _mouseSensitivity;
     public Action<Item> OnItemPickup;
+    public Action OnPrimaryAction;
     public Action OnSecondaryAction;
     public Action OnUseAction;
     public Action OnWeaponPullout;
@@ -27,6 +28,11 @@ public class PlayerController : MonoBehaviour
             AudioManager.Instance.PlayPickupItemSound();
             var invItem = UIManager.Instance.MakeItemIntoInventoryItemUI(obj);
             character.Backpack.TryAddItem(invItem);
+        };
+
+        OnPrimaryAction += () => {
+            var dir = playerCamera.transform.forward;
+            character.AttackPrimary(dir.normalized);
         };
 
         OnSecondaryAction += () => {
@@ -120,6 +126,10 @@ public class PlayerController : MonoBehaviour
 
     void MiscInputs()
     {
+        if (Input.GetMouseButtonUp(0))
+        {
+            OnPrimaryAction?.Invoke();
+        }
         if (Input.GetMouseButtonUp(1))
         {
             OnSecondaryAction?.Invoke();
