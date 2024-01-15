@@ -12,7 +12,7 @@ public enum ItemType
     Miscellaneous
 }
 
-public class InventoryItem : MonoBehaviour
+public class InventoryItemUI : MonoBehaviour
 {
     [NonSerialized] public ItemType itemType;
     public GameObject RepresentedItem { get; private set; }

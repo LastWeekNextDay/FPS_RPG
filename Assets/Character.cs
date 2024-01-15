@@ -15,7 +15,8 @@ public class Equipment
     public bool TryEquipWeapon(InventoryItemUI item)
     {
         if (item.RepresentedItem.GetComponent<Weapon>() == null) return false;
-        if (WeaponInventoryItem == null || WeaponInventoryItem.RepresentedItem.GetComponent<Weapon>().weaponName == "Fists")
+        if (WeaponInventoryItem == null || WeaponInventoryItem.RepresentedItem.GetComponent<Weapon>().weaponName == "Fists" ||
+        WeaponInventoryItem == item)
         {
             WeaponInventoryItem = item;
             return true;
