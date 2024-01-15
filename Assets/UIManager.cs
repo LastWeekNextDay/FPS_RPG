@@ -31,7 +31,7 @@ public class UIManager : MonoBehaviour
     private TMPro.TextMeshProUGUI _invManaRegenNumber;
     private TMPro.TextMeshProUGUI _invEnergyRegenNumber;
 
-    private Character _character;
+    private Character _player;
     public bool IsInventoryOpen {
         get {
             if (UnityEssential.TryFindObject("Inventory", out _inventoryPanel))
@@ -59,14 +59,14 @@ public class UIManager : MonoBehaviour
 
     void Update()
     {
-        if (_character == null)
+        if (_player == null)
         {
-            var character = GameObject.FindWithTag("Player");
-            if (character == null)
+            var player = GameObject.FindWithTag("Player");
+            if (player == null)
             {
                 return;
             } else {
-                _character = character.GetComponent<Character>();
+                _player = player.GetComponent<Character>();
             }
         } else {
             UpdateInventoryStats();
@@ -114,7 +114,7 @@ public class UIManager : MonoBehaviour
                     _invStrengthNumber = strengthNumber.GetComponent<TMPro.TextMeshProUGUI>();
                 }
             } else {
-                _invStrengthNumber.text = _character.Strength.ToString();
+                _invStrengthNumber.text = _player.Strength.ToString();
             }
 
             if (_invAgilityNumber == null)
@@ -124,7 +124,7 @@ public class UIManager : MonoBehaviour
                     _invAgilityNumber = agilityNumber.GetComponent<TMPro.TextMeshProUGUI>();
                 }
             } else {
-                _invAgilityNumber.text = _character.Agility.ToString();
+                _invAgilityNumber.text = _player.Agility.ToString();
             }
 
             if (_invEnduranceNumber == null)
@@ -134,7 +134,7 @@ public class UIManager : MonoBehaviour
                     _invEnduranceNumber = enduranceNumber.GetComponent<TMPro.TextMeshProUGUI>();
                 }
             } else {
-                _invEnduranceNumber.text = _character.Endurance.ToString();
+                _invEnduranceNumber.text = _player.Endurance.ToString();
             }
 
             if (_invIntelligenceNumber == null)
@@ -144,7 +144,7 @@ public class UIManager : MonoBehaviour
                     _invIntelligenceNumber = intelligenceNumber.GetComponent<TMPro.TextMeshProUGUI>();
                 }
             } else {
-                _invIntelligenceNumber.text = _character.Intelligence.ToString();
+                _invIntelligenceNumber.text = _player.Intelligence.ToString();
             }
 
             if (_invHealthNumber == null)
@@ -154,7 +154,7 @@ public class UIManager : MonoBehaviour
                     _invHealthNumber = healthNumber.GetComponent<TMPro.TextMeshProUGUI>();
                 }
             } else {
-                _invHealthNumber.text = _character.Health.ToString();
+                _invHealthNumber.text = _player.Health.ToString();
             }
 
             if (_invManaNumber == null)
@@ -164,7 +164,7 @@ public class UIManager : MonoBehaviour
                     _invManaNumber = manaNumber.GetComponent<TMPro.TextMeshProUGUI>();
                 }
             } else {
-                _invManaNumber.text = _character.Mana.ToString();
+                _invManaNumber.text = _player.Mana.ToString();
             }
 
             if (_invEnergyNumber == null)
@@ -174,7 +174,7 @@ public class UIManager : MonoBehaviour
                     _invEnergyNumber = energyNumber.GetComponent<TMPro.TextMeshProUGUI>();
                 }
             } else {
-                _invEnergyNumber.text = _character.Energy.ToString();
+                _invEnergyNumber.text = _player.Energy.ToString();
             }
 
             if (_invMaxHealthNumber == null)
@@ -184,7 +184,7 @@ public class UIManager : MonoBehaviour
                     _invMaxHealthNumber = maxHealthNumber.GetComponent<TMPro.TextMeshProUGUI>();
                 }
             } else {
-                _invMaxHealthNumber.text = _character.MaxHealth.ToString();
+                _invMaxHealthNumber.text = _player.MaxHealth.ToString();
             }
 
             if (_invMaxManaNumber == null)
@@ -194,7 +194,7 @@ public class UIManager : MonoBehaviour
                     _invMaxManaNumber = maxManaNumber.GetComponent<TMPro.TextMeshProUGUI>();
                 }
             } else {
-                _invMaxManaNumber.text = _character.MaxMana.ToString();
+                _invMaxManaNumber.text = _player.MaxMana.ToString();
             }
 
             if (_invMaxEnergyNumber == null)
@@ -204,7 +204,7 @@ public class UIManager : MonoBehaviour
                     _invMaxEnergyNumber = maxEnergyNumber.GetComponent<TMPro.TextMeshProUGUI>();
                 }
             } else {
-                _invMaxEnergyNumber.text = _character.MaxEnergy.ToString();
+                _invMaxEnergyNumber.text = _player.MaxEnergy.ToString();
             }
 
             if (_invSpeedNumber == null)
@@ -214,7 +214,7 @@ public class UIManager : MonoBehaviour
                     _invSpeedNumber = speedNumber.GetComponent<TMPro.TextMeshProUGUI>();
                 }
             } else {
-                _invSpeedNumber.text = _character.Speed.ToString();
+                _invSpeedNumber.text = _player.Speed.ToString();
             }
 
             if (_invJumpForceNumber == null)
@@ -224,7 +224,7 @@ public class UIManager : MonoBehaviour
                     _invJumpForceNumber = jumpForceNumber.GetComponent<TMPro.TextMeshProUGUI>();
                 }
             } else {
-                _invJumpForceNumber.text = _character.JumpForce.ToString();
+                _invJumpForceNumber.text = _player.JumpForce.ToString();
             }
 
             if (_invHealthRegenNumber == null)
@@ -234,7 +234,7 @@ public class UIManager : MonoBehaviour
                     _invHealthRegenNumber = healthRegenNumber.GetComponent<TMPro.TextMeshProUGUI>();
                 }
             } else {
-                _invHealthRegenNumber.text = _character.HealthRegen.ToString();
+                _invHealthRegenNumber.text = _player.HealthRegen.ToString();
             }
 
             if (_invManaRegenNumber == null)
@@ -244,7 +244,7 @@ public class UIManager : MonoBehaviour
                     _invManaRegenNumber = manaRegenNumber.GetComponent<TMPro.TextMeshProUGUI>();
                 }
             } else {
-                _invManaRegenNumber.text = _character.ManaRegen.ToString();
+                _invManaRegenNumber.text = _player.ManaRegen.ToString();
             }
 
             if (_invEnergyRegenNumber == null)
@@ -254,7 +254,7 @@ public class UIManager : MonoBehaviour
                     _invEnergyRegenNumber = energyRegenNumber.GetComponent<TMPro.TextMeshProUGUI>();
                 }
             } else {
-                _invEnergyRegenNumber.text = _character.EnergyRegen.ToString();
+                _invEnergyRegenNumber.text = _player.EnergyRegen.ToString();
             }
         }
     }
@@ -268,7 +268,7 @@ public class UIManager : MonoBehaviour
                 _healthBar = healthBar.GetComponentInChildren<UnityEngine.UI.Slider>();
             }
         } else {
-            _healthBar.value = _character.Health / _character.MaxHealth;
+            _healthBar.value = _player.Health / _player.MaxHealth;
         }
         if (IsInventoryOpen)
         {
@@ -279,7 +279,7 @@ public class UIManager : MonoBehaviour
                     _invHealthBar = invHealthBar.GetComponentInChildren<UnityEngine.UI.Slider>();
                 }
             } else {
-                _invHealthBar.value = _character.Health / _character.MaxHealth;
+                _invHealthBar.value = _player.Health / _player.MaxHealth;
             }
         }
     }
@@ -293,7 +293,7 @@ public class UIManager : MonoBehaviour
                _manaBar = manaBar.GetComponentInChildren<UnityEngine.UI.Slider>();
             }
         } else {
-            _manaBar.value = _character.Mana / _character.MaxMana;
+            _manaBar.value = _player.Mana / _player.MaxMana;
         }
         if (IsInventoryOpen)
         {
@@ -304,7 +304,7 @@ public class UIManager : MonoBehaviour
                     _invManaBar = invManaBar.GetComponentInChildren<UnityEngine.UI.Slider>();
                 }
             } else {
-                _invManaBar.value = _character.Mana / _character.MaxMana;
+                _invManaBar.value = _player.Mana / _player.MaxMana;
             }
         }
     }
@@ -318,7 +318,7 @@ public class UIManager : MonoBehaviour
                 _energyBar = EnergyBar.GetComponentInChildren<UnityEngine.UI.Slider>();
             }
         } else {
-            _energyBar.value = _character.Energy / _character.MaxEnergy;
+            _energyBar.value = _player.Energy / _player.MaxEnergy;
         }
         if (IsInventoryOpen)
         {
@@ -329,18 +329,18 @@ public class UIManager : MonoBehaviour
                     _invEnergyBar = invEnergyBar.GetComponentInChildren<UnityEngine.UI.Slider>();
                 }
             } else {
-                _invEnergyBar.value = _character.Energy / _character.MaxEnergy;
+                _invEnergyBar.value = _player.Energy / _player.MaxEnergy;
             }
         }
     }
 
     public void ToggleInventory()
     {
-        if (_character == null)
+        if (_player == null)
         {
             if (UnityEssential.TryFindObject("Player", out GameObject charObj, false))
             {
-                _character = charObj.GetComponent<Character>();
+                _player = charObj.GetComponent<Character>();
             }
         } else {
             if (_inventoryPanel == null)
@@ -360,8 +360,8 @@ public class UIManager : MonoBehaviour
         if (t)
         {
             _inventoryPanel.SetActive(t);
-            RefreshBackpackItemsUI(GetPlayerBackpackUI(), _character.Backpack);
-            RefreshEquipmentItemsUI(GetPlayerEquipmentUI(), _character.Equipment);
+            RefreshBackpackItemsUI(GetPlayerBackpackUI(), _player.Backpack);
+            RefreshEquipmentItemsUI(GetPlayerEquipmentUI(), _player.Equipment);
         } else {
             DetachAllItemsFromBacpackSlots(GetPlayerBackpackUI());
             DetachAllItemsFromEquipmentSlots(GetPlayerEquipmentUI());
@@ -476,7 +476,7 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    void RefreshEquipmentItemsUI(GameObject equipmentUI, Equipment equipment)
+    public void RefreshEquipmentItemsUI(GameObject equipmentUI, Equipment equipment)
     {
         if (equipmentUI == null || equipment == null)
         {
@@ -488,14 +488,14 @@ public class UIManager : MonoBehaviour
             switch (slot.name)
             {
                 case "Weapon1Holder":
-                    if (equipment.WeaponInventoryItem != null)
+                    if (equipment.WeaponInventoryItem != null && equipment.WeaponInventoryItem.IsToBeReplaced() == false)
                     {
                         if (slot.item == null)
                         {
                             slot.Attach(equipment.WeaponInventoryItem);
                         }
                     }
-                    else if (equipment.WeaponInventoryItem == null)
+                    else if (equipment.WeaponInventoryItem == null || equipment.WeaponInventoryItem.IsToBeReplaced() == true)
                     {
                         if (slot.item != null)
                         {
@@ -599,7 +599,7 @@ public class UIManager : MonoBehaviour
         return -1;
     }
 
-    public bool TryToAddToSlotUI(InventorySlot itemSlot, InventoryItem item)
+    public bool TryToAddToSlotUI(InventorySlot itemSlot, InventoryItemUI item)
     {
         if (itemSlot == null || item == null)
         {
@@ -627,13 +627,13 @@ public class UIManager : MonoBehaviour
         return false;
     }
 
-    public InventoryItem MakeObjectIntoInventoryItem(GameObject itemObject)
+    public InventoryItemUI MakeObjectIntoInventoryItem(GameObject itemObject)
     {
         if (itemObject == null)
         {
             return null;
         }
-        var invItem = Instantiate(inventoryItemPrefab, Vector3.zero, Quaternion.identity).GetComponent<InventoryItem>();
+        var invItem = Instantiate(inventoryItemPrefab, Vector3.zero, Quaternion.identity).GetComponent<InventoryItemUI>();
         invItem.AttachObjectAsInventoryItem(itemObject);
         return invItem;
     }
