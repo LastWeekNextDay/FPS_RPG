@@ -180,7 +180,6 @@ public class InventoryItemUI : MonoBehaviour
                 OnCancelSelection?.Invoke();
                 return;
             }
-            slotAttachedTo.Detach();
             slot.Attach(this);
             Player.GetComponent<Character>().Backpack.TryRemoveItem(this);
         };
