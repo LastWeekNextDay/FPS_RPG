@@ -9,7 +9,7 @@ public class PlayerController : MonoBehaviour
     private readonly float _cameraDownLimit = 55f;
     private Vector3 _localEulerAngles;
     private float _mouseSensitivity;
-    public Action<GameObject> OnItemPickup;
+    public Action<Item> OnItemPickup;
     public Action OnSecondaryAction;
     public Action OnUseAction;
     public Action OnWeaponPullout;
@@ -25,7 +25,7 @@ public class PlayerController : MonoBehaviour
         _localEulerAngles = playerCamera.transform.localEulerAngles;
         OnItemPickup += (obj) => {
             AudioManager.Instance.PlayPickupItemSound();
-            var invItem = UIManager.Instance.MakeObjectIntoInventoryItem(obj);
+            var invItem = UIManager.Instance.MakeItemIntoInventoryItemUI(obj);
             character.Backpack.TryAddItem(invItem);
         };
 
@@ -53,7 +53,8 @@ public class PlayerController : MonoBehaviour
                     switch(hit.collider.tag)
                     {
                         case "Item":
-                            OnItemPickup?.Invoke(item);
+                            var itemC = hit.collider.gameObject.GetComponent<Item>();
+                            OnItemPickup?.Invoke(itemC);
                             break;
                     }
                 }
@@ -134,7 +135,7 @@ public class PlayerController : MonoBehaviour
                 if (PrefabContainer.Instance.TryGetPrefab("Fists", out var fistsPrefab))
                 {
                     var fists = Instantiate(fistsPrefab, character.transform.position, Quaternion.identity);
-                    var fistsInvItem = UIManager.Instance.MakeObjectIntoInventoryItem(fists);
+                    var fistsInvItem = UIManager.Instance.MakeItemIntoInventoryItemUI(fists.GetComponent<Weapon>());
                     character.Equipment.TryEquipWeapon(fistsInvItem);
                 }
             }

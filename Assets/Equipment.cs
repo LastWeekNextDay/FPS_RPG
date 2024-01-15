@@ -9,8 +9,8 @@ public class Equipment
 
     public bool TryEquipWeapon(InventoryItemUI item)
     {
-        if (item.RepresentedItem.GetComponent<Weapon>() == null) return false;
-        if (WeaponInventoryItem == null || WeaponInventoryItem.RepresentedItem.GetComponent<Weapon>().weaponName == "Fists" ||
+        if (item.RepresentedItem.ItemType != ItemType.Weapon) return false;
+        if (WeaponInventoryItem == null || WeaponInventoryItem.RepresentedItem.IsToBeReplaced() ||
         WeaponInventoryItem == item)
         {
             WeaponInventoryItem = item;
@@ -21,7 +21,7 @@ public class Equipment
 
     public bool TryUnequipWeapon(InventoryItemUI item)
     {
-        if (item.RepresentedItem.GetComponent<Weapon>() == null) return false;
+        if (item.RepresentedItem.ItemType != ItemType.Weapon) return false;
         if (WeaponInventoryItem == item) 
         {
             WeaponInventoryItem = null;

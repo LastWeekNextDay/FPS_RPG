@@ -13,7 +13,7 @@ public enum WeaponBaseType
     ShortSword
 }
 
-public class Weapon : MonoBehaviour
+public class Weapon : Item
 {
     public string weaponName;
     public MainAttackType mainAttackType;
@@ -25,10 +25,7 @@ public class Weapon : MonoBehaviour
     public float baseWindupTime;
     public float basePullOutTime;
     public float baseAttackTime;
-    public Sprite itemIcon;
     public bool IsTwoHanded;
-    public bool IsInteractable;
-    public bool IsForcefullyEquipped;
     [NonSerialized] public Character Wielder;
     [NonSerialized] public bool IsReady;
 }
