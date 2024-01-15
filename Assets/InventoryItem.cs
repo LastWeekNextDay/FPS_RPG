@@ -237,6 +237,13 @@ public class InventoryItemUI : MonoBehaviour
 
     public void AttachToMouse()
     {
+        if (RepresentedItem.GetComponent<Weapon>() != null)
+        {
+            if (IsToBeReplaced() || IsMovableFromSlot() == false)
+            {
+                return;
+            }
+        }
         isSelected = true;
         transform.SetParent(_canvasObject.transform);
         transform.SetSiblingIndex(transform.parent.childCount - 1);
@@ -245,12 +252,26 @@ public class InventoryItemUI : MonoBehaviour
 
     public void FollowMouse()
     {
+        if (RepresentedItem.GetComponent<Weapon>() != null)
+        {
+            if (IsToBeReplaced() || IsMovableFromSlot() == false)
+            {
+                return;
+            }
+        }
         var mousePosition = Input.mousePosition;
         transform.position = mousePosition;
     }
 
     public void DetachFromMouse()
     {
+        if (RepresentedItem.GetComponent<Weapon>() != null)
+        {
+            if (IsToBeReplaced() || IsMovableFromSlot() == false)
+            {
+                return;
+            }
+        }
         isSelected = false;
         transform.SetParent(_canvasObject.transform);
         var eventSystem = GameObject.Find("EventSystem").GetComponent<EventSystem>();
@@ -261,6 +282,7 @@ public class InventoryItemUI : MonoBehaviour
         };
         var hits = new List<RaycastResult>();
         rayCaster.Raycast(pointerEventData, hits);
+
         foreach (var hit in hits)
         {
             if (hit.gameObject == gameObject)
