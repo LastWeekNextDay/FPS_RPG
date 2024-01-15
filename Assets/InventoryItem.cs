@@ -145,6 +145,35 @@ public class InventoryItemUI : MonoBehaviour
         };
     }
 
+    public bool IsMovableFromSlot()
+    {
+        if (RepresentedItem.GetComponent<Weapon>() != null)
+        {
+            if (RepresentedItem.GetComponent<Weapon>().IsInteractable == false)
+            {
+                return false;
+            }
+            if (RepresentedItem.GetComponent<Weapon>().IsForcefullyEquipped == true)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public bool IsToBeReplaced()
+    {
+        if (RepresentedItem.GetComponent<Weapon>() != null)
+        {
+            if (RepresentedItem.GetComponent<Weapon>().IsInteractable == false && 
+                RepresentedItem.GetComponent<Weapon>().IsForcefullyEquipped == false)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void AttachObjectAsInventoryItem(GameObject itemObject)
     {
         RepresentedItem = itemObject;
