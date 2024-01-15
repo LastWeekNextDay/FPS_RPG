@@ -18,8 +18,8 @@ public class InventoryItemUI : MonoBehaviour
     public Action<InventorySlot> OnAttachToSlot;
     public Action OnCancelSelection;
     public Action<Character, Vector3> OnDrop;
-    public Action<InventorySlot> OnEquip;
-    public Action<InventorySlot> OnUnequip;
+    public Action<Character, InventorySlot> OnEquip;
+    public Action<Character, InventorySlot> OnUnequip;
 
     private GameObject _canvasObject;
 
@@ -29,11 +29,13 @@ public class InventoryItemUI : MonoBehaviour
         OnMouseAttach += () => 
         {
             AudioManager.Instance.PlayPickupInventoryItemSound();
+            var Player = GameObject.Find("Player");
+            var playerChar = Player.GetComponent<Character>();
             if (slotAttachedTo != null)
             {
                 if (slotAttachedTo.isEquipmentSlot)
                 {
-                    OnUnequip?.Invoke(slotAttachedTo);
+                    OnUnequip?.Invoke(playerChar, slotAttachedTo);
                 }
             }
             transform.SetParent(_canvasObject.transform);
@@ -43,6 +45,7 @@ public class InventoryItemUI : MonoBehaviour
         {
             AudioManager.Instance.PlayPickupInventoryItemSound();
             var Player = GameObject.Find("Player");
+            var playerChar = Player.GetComponent<Character>();
             if (slot != null)
             {
                 if (slot.invItem == null || slot.invItem.RepresentedItem.IsToBeReplaced())
@@ -52,29 +55,28 @@ public class InventoryItemUI : MonoBehaviour
                         switch (slot.name)
                         {
                             case "Weapon1Holder":
-                                if (RepresentedItem.itemType != ItemType.Weapon)
+                                if (RepresentedItem.ItemType != ItemType.Weapon)
                                 {
                                     OnCancelSelection?.Invoke();
                                     return;
                                 }
-                                var character = Player.GetComponent<Character>();
-                                if (character.Equipment.WeaponInventoryItem != null){
-                                    if (character.Equipment.WeaponInventoryItem.RepresentedItem.IsToBeReplaced())
+                                if (playerChar.Equipment.WeaponInventoryItem != null){
+                                    if (playerChar.Equipment.WeaponInventoryItem.RepresentedItem.IsToBeReplaced())
                                     {
-                                        Destroy(Player.GetComponent<Character>().Equipment.WeaponInventoryItem.RepresentedItem);
-                                        Destroy(Player.GetComponent<Character>().Equipment.WeaponInventoryItem);  
+                                        Destroy(playerChar.Equipment.WeaponInventoryItem.RepresentedItem);
+                                        Destroy(playerChar.Equipment.WeaponInventoryItem);  
                                     }
                                 }
                                 if (RepresentedItem.GetComponent<Weapon>().IsTwoHanded == false)
                                 {
                                     // TODO: Special checkif two handed.
                                 }
-                                if (character.Equipment.WeaponInventoryItem == null)
+                                if (playerChar.Equipment.WeaponInventoryItem == null)
                                 {
                                     if (slotAttachedTo != null){
                                         slotAttachedTo.Detach();
                                     }
-                                    OnEquip?.Invoke(slot);
+                                    OnEquip?.Invoke(playerChar, slot);
                                     return;
                                 }
                                 return; 
@@ -83,14 +85,15 @@ public class InventoryItemUI : MonoBehaviour
                                 return;
                         }
                     } else {
-                        if (slotAttachedTo != null){
+                        if (slotAttachedTo != null)
+                        {
                             if (slotAttachedTo.isEquipmentSlot)
                             {
                                 switch (slotAttachedTo.name)
                                 {
                                     case "Weapon1Holder":
-                                        var invItem = Player.GetComponent<Character>().Equipment.WeaponInventoryItem;
-                                        OnUnequip?.Invoke(slotAttachedTo);
+                                        var invItem = playerChar.Equipment.WeaponInventoryItem;
+                                        OnUnequip?.Invoke(playerChar, slotAttachedTo);
                                         if (invItem.RepresentedItem.IsToBeReplaced())
                                         {
                                             Destroy(invItem.RepresentedItem);
@@ -100,12 +103,12 @@ public class InventoryItemUI : MonoBehaviour
                                         break;
                                 }
                             } else {
+                                slotAttachedTo.Backpack.TryRemoveItem(this);
                                 slotAttachedTo.Detach();
                             }
                         }
                         slot.Attach(this);
-                        Player.GetComponent<Character>().Backpack.TryChangeItemPosition(
-                            this, UIManager.Instance.GetBackpackSlotUINumber(UIManager.Instance.GetPlayerBackpackUI(), slot));
+                        slot.Backpack.TryChangeItemPosition(this, slot.backpackSlotIndex);
                     }
                     return; 
                 } else {
@@ -118,22 +121,26 @@ public class InventoryItemUI : MonoBehaviour
         {
             AudioManager.Instance.PlayCancelInventoryItemPickupSound();
             var Player = GameObject.Find("Player");
+            var playerChar = Player.GetComponent<Character>();
             if (slotAttachedTo != null)
             {
-                slotAttachedTo.Attach(this);
-                if (slotAttachedTo.isEquipmentSlot)
+                if (slotAttachedTo.Backpack == playerChar.Backpack)
                 {
-                    OnEquip?.Invoke(slotAttachedTo);
+                    slotAttachedTo.Attach(this);
+                    if (slotAttachedTo.isEquipmentSlot)
+                    {
+                        OnEquip?.Invoke(playerChar, slotAttachedTo);
+                    }
                 }
             } else {
-                if (Player.GetComponent<Character>().Backpack.TryAddItem(this) == false)
+                if (playerChar.Backpack.TryAddItem(this) == false)
                 {
-                    Drop(Player);
+                    Drop(playerChar);
                     UIManager.Instance.RefreshBackpackItemsUI(UIManager.Instance.GetPlayerBackpackUI(),
-                        Player.GetComponent<Character>().Backpack);
+                        playerChar.Backpack);
                 } else {
                     UIManager.Instance.RefreshBackpackItemsUI(UIManager.Instance.GetPlayerBackpackUI(),
-                        Player.GetComponent<Character>().Backpack);
+                        playerChar.Backpack);
                 }
             }             
         };
@@ -141,11 +148,16 @@ public class InventoryItemUI : MonoBehaviour
         OnDrop += (character, pos) => 
         {
             AudioManager.Instance.PlayDropItemSound();
+            var Player = GameObject.Find("Player");
+            var playerChar = Player.GetComponent<Character>();
             if (slotAttachedTo != null)
             {
-                if (slotAttachedTo.isEquipmentSlot)
+                if (slotAttachedTo.Backpack == playerChar.Backpack)
                 {
-                    OnUnequip?.Invoke(slotAttachedTo);
+                    if (slotAttachedTo.isEquipmentSlot)
+                    {
+                        OnUnequip?.Invoke(playerChar, slotAttachedTo);
+                    }
                 }
             }
             var rb = RepresentedItem.GetComponent<Rigidbody>();
@@ -164,27 +176,27 @@ public class InventoryItemUI : MonoBehaviour
             character.Backpack.TryRemoveItem(this);
         }; 
 
-        OnEquip += (slot) => 
+        OnEquip += (character, slot) => 
         {
             var Player = GameObject.Find("Player");
-            var character = Player.GetComponent<Character>();
-            if (RepresentedItem.GetComponent<Weapon>() != null)
+            var playerChar = Player.GetComponent<Character>();
+            if (RepresentedItem.ItemType == ItemType.Weapon)
             {
-                if (character.Equipment.TryEquipWeapon(this) == false)
+                if (playerChar.Equipment.TryEquipWeapon(this) == false)
                 {
                     OnCancelSelection?.Invoke();
                     return;
                 }
             }
             slot.Attach(this);
-            Player.GetComponent<Character>().Backpack.TryRemoveItem(this);
+            playerChar.Backpack.TryRemoveItem(this);
         };
 
-        OnUnequip += (slot) => 
+        OnUnequip += (character, slot) => 
         {
             var Player = GameObject.Find("Player");
-            var character = Player.GetComponent<Character>();
-            if (RepresentedItem.GetComponent<Weapon>() != null)
+            var playerChar = Player.GetComponent<Character>();
+            if (RepresentedItem.ItemType == ItemType.Weapon)
             {
                 if (character.Equipment.TryUnequipWeapon(this) == false)
                 {
@@ -321,12 +333,12 @@ public class InventoryItemUI : MonoBehaviour
         }
 
         var Player = GameObject.Find("Player");
-        Drop(Player);
+        Drop(Player.GetComponent<Character>());
     }
 
-    public void Drop(GameObject fromWho)
+    public void Drop(Character fromWho)
     {
-        OnDrop?.Invoke(fromWho.GetComponent<Character>(), CalculatePositionForDropOfItem(fromWho.transform.position));
+        OnDrop?.Invoke(fromWho, CalculatePositionForDropOfItem(fromWho.transform.position));
     }
 
     Vector3 CalculatePositionForDropOfItem(Vector3 fromWhere)

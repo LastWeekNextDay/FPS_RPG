@@ -456,7 +456,8 @@ public class UIManager : MonoBehaviour
             foreach (Transform child in row.transform)
             {
                 var slot = child.gameObject.GetComponent<InventorySlot>();
-                slot.backpack = backpack;
+                slot.Backpack = backpack;
+                slot.backpackSlotIndex = UIIndex;
                 if (backpack.InventoryItems[UIIndex] != null)
                 {
                     if (slot.invItem == null)

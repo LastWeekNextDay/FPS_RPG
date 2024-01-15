@@ -1,9 +1,12 @@
+using System;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class InventorySlot : MonoBehaviour
 {
+    [NonSerialized] public int backpackSlotIndex;
     public InventoryItemUI invItem;
-    public Backpack backpack;
+    public Backpack Backpack;
     public bool isEquipmentSlot;
 
     public void Attach(InventoryItemUI item)
