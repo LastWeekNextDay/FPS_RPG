@@ -2,11 +2,11 @@ using UnityEngine;
 
 public class InventorySlot : MonoBehaviour
 {
-    public InventoryItem item;
+    public InventoryItemUI item;
     public Backpack backpack;
     public bool isEquipmentSlot;
 
-    public void Attach(InventoryItem item)
+    public void Attach(InventoryItemUI item)
     {
         this.item = item;
         item.transform.SetParent(transform);
