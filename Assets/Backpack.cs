@@ -1,66 +1,66 @@
 public class Backpack
 {
-    public InventoryItemUI[] InventoryItems;
+    public Item[] Items;
     public Character Owner;
 
     public Backpack(Character owner)
     {
         Owner = owner;
-        InventoryItems = new InventoryItemUI[28];
+        Items = new Item[28];
     }
 
-    public bool TryAddItem(InventoryItemUI item)
+    public bool TryAddItem(Item item)
     {
-        for (int i = 0; i < InventoryItems.Length; i++)
+        for (int i = 0; i < Items.Length; i++)
         {
-            if (InventoryItems[i] == null)
+            if (Items[i] == null)
             {
-                InventoryItems[i] = item;
+                Items[i] = item;
                 return true;
             }
         }
         return false;
     }
 
-    public bool TryChangeItemPosition(InventoryItemUI item, int toPosition)
+    public bool TryChangeItemPosition(Item item, int toPosition)
     {
-        if (InventoryItems[toPosition] == null)
+        if (Items[toPosition] == null)
         {
-            InventoryItems[toPosition] = item;
+            Items[toPosition] = item;
             return true;
         }
-        InventoryItemUI itemToSwap;
-        for (int i = 0; i < InventoryItems.Length; i++)
+        Item itemToSwap;
+        for (int i = 0; i < Items.Length; i++)
         {
-            if (InventoryItems[i] == item)
+            if (Items[i] == item)
             {
-                itemToSwap = InventoryItems[i];
-                InventoryItems[toPosition] = itemToSwap;
-                InventoryItems[i] = null;
+                itemToSwap = Items[i];
+                Items[toPosition] = itemToSwap;
+                Items[i] = null;
                 return true;
             }
         }
         return false;
     }
 
-    public bool TryRemoveItem(InventoryItemUI item)
+    public bool TryRemoveItem(Item item)
     {
-        for (int i = 0; i < InventoryItems.Length; i++)
+        for (int i = 0; i < Items.Length; i++)
         {
-            if (InventoryItems[i] == item)
+            if (Items[i] == item)
             {
-                InventoryItems[i] = null;
+                Items[i] = null;
                 return true;
             }
         }
         return false;
     }
 
-    public bool TryGetItemIndex(InventoryItemUI item, out int index)
+    public bool TryGetItemIndex(Item item, out int index)
     {
-        for (int i = 0; i < InventoryItems.Length; i++)
+        for (int i = 0; i < Items.Length; i++)
         {
-            if (InventoryItems[i] == item)
+            if (Items[i] == item)
             {
                 index = i;
                 return true;

@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Unity.VisualStudio.Editor;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -24,60 +25,6 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         _localEulerAngles = playerCamera.transform.localEulerAngles;
-        OnItemPickup += (obj) => {
-            AudioManager.Instance.PlayPickupItemSound();
-            var invItem = UIManager.Instance.MakeItemIntoInventoryItemUI(obj);
-            character.Backpack.TryAddItem(invItem);
-            if (UIManager.Instance.IsInventoryOpen)
-            {
-                UIManager.Instance.RefreshBackpackItemsUI(UIManager.Instance.GetPlayerBackpackUI(), character.Backpack);
-            }
-        };
-
-        OnPrimaryAction += () => {
-            var dir = playerCamera.transform.forward;
-            character.AttackPrimary(dir.normalized);
-        };
-
-        OnSecondaryAction += () => {
-            UIManager.Instance.ToggleInventory();
-            UIManager.Instance.AllowCursor(UIManager.Instance.IsInventoryOpen);
-            if (UIManager.Instance.IsInventoryOpen)
-            {
-                Time.timeScale = 0f;
-            }
-            else
-            {
-                Time.timeScale = 1f;
-            }
-        };
-
-        OnUseAction += () => {
-            var ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
-            var distance = 2f;
-            if (Physics.Raycast(ray, out var hit, distance))
-            {
-                if (hit.collider != null)
-                {
-                    var item = hit.collider.gameObject;
-                    switch(hit.collider.tag)
-                    {
-                        case "Item":
-                            var itemC = hit.collider.gameObject.GetComponent<Item>();
-                            OnItemPickup?.Invoke(itemC);
-                            break;
-                    }
-                }
-            }
-        };
-
-        OnWeaponPullout += () => {
-            character.PullOutWeapon();
-        };
-
-        OnWeaponPutaway += () => {
-            character.PutAwayWeapon();
-        };
     }
 
     void Update()
@@ -128,35 +75,99 @@ public class PlayerController : MonoBehaviour
         character.rigidBody.velocity = moveVector;
     }
 
+    void PrimaryAction()
+    {
+        var dir = playerCamera.transform.forward;
+        character.AttackPrimary(dir.normalized);
+        OnPrimaryAction?.Invoke();
+    }
+
+    void SecondaryAction()
+    {
+        UIManager.Instance.ToggleInventory();
+        UIManager.Instance.AllowCursor(UIManager.Instance.IsInventoryOpen);
+        if (UIManager.Instance.IsInventoryOpen)
+        {
+            Time.timeScale = 0f;
+        }
+        else
+        {
+            Time.timeScale = 1f;
+        }
+        OnSecondaryAction?.Invoke();
+    }
+
+    void UseAction()
+    {
+        var ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
+        var distance = 2f;
+        if (Physics.Raycast(ray, out var hit, distance))
+        {
+            if (hit.collider != null)
+            {
+                switch(hit.collider.tag)
+                {
+                    case "Item":
+                        var itemC = hit.collider.gameObject.GetComponent<Item>();
+                        ItemPickup(itemC);
+                        break;
+                }
+            }
+        }
+        OnUseAction?.Invoke();
+    }
+
+    void ItemPickup(Item item)
+    {
+        AudioManager.Instance.PlayPickupItemSound();
+        character.Backpack.TryAddItem(item);
+        if (UIManager.Instance.IsInventoryOpen)
+        {
+            UIManager.Instance.RefreshBackpackItemsUI(UIManager.Instance.GetPlayerBackpackUI(), character.Backpack);
+        }
+        item.SetActiveInWorld(false);
+        OnItemPickup?.Invoke(item);
+    }
+
+    void ReadyAction()
+    {
+        if (character.Equipment.WeaponItem == null)
+        {
+            if (PrefabContainer.Instance.TryGetPrefab("Fists", out var fistsPrefab))
+            {
+                var fists = Instantiate(fistsPrefab, character.transform.position, Quaternion.identity);
+                character.Equipment.TryEquipWeapon(fists.GetComponent<Weapon>());
+            }
+        }
+        if (character.Equipment.WeaponItem.IsReady == false)
+        {
+            character.PullOutWeapon();
+            UIManager.Instance.SetCombatReadyIndicatorColor(Color.red);
+            OnWeaponPullout?.Invoke();
+        } else {
+            character.PutAwayWeapon();
+            UIManager.Instance.SetCombatReadyIndicatorColor(Color.white);
+            OnWeaponPutaway?.Invoke();
+        }
+    }
+
     void MiscInputs()
     {
         if (Input.GetMouseButtonUp(0))
         {
-            OnPrimaryAction?.Invoke();
+            PrimaryAction();
         }
         if (Input.GetMouseButtonUp(1))
         {
-            OnSecondaryAction?.Invoke();
+            SecondaryAction();
         }
         if (Input.GetKeyUp(KeyCode.E))
         {
-            OnUseAction?.Invoke();
+            UseAction();
         }
         if (Input.GetKeyUp(KeyCode.R))
         {
-            if (character.Equipment.WeaponInventoryItem == null)
-            {
-                if (PrefabContainer.Instance.TryGetPrefab("Fists", out var fistsPrefab))
-                {
-                    var fists = Instantiate(fistsPrefab, character.transform.position, Quaternion.identity);
-                    var fistsInvItem = UIManager.Instance.MakeItemIntoInventoryItemUI(fists.GetComponent<Weapon>());
-                    character.Equipment.TryEquipWeapon(fistsInvItem);
-                }
-            }
-            if (character.Equipment.WeaponInventoryItem.RepresentedItem.GetComponent<Weapon>().IsReady == false)
-                OnWeaponPullout?.Invoke();
-            else
-                OnWeaponPutaway?.Invoke();
+            ReadyAction();
         }
     }
 

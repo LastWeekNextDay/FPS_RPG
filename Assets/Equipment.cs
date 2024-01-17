@@ -1,10 +1,10 @@
 public class Equipment
 {
-    public InventoryItemUI WeaponInventoryItem;
-    public InventoryItemUI HelmetInventoryItem;
-    public InventoryItemUI ChestInventoryItem;
-    public InventoryItemUI LegsInventoryItem;
-    public InventoryItemUI BootsInventoryItem;
+    public Weapon WeaponItem;
+    public Item HelmetItem;
+    public Item ChestItem;
+    public Item LegsItem;
+    public Item BootsItem;
     public Character Owner;
 
     public Equipment(Character owner)
@@ -12,48 +12,86 @@ public class Equipment
         Owner = owner;
     }
 
-    public bool TryEquip(InventoryItemUI item)
+    public bool TryEquip(Item item)
     {
-        switch (item.RepresentedItem.ItemType)
+        switch (item.ItemType)
         {
             case ItemType.Weapon:
-                return TryEquipWeapon(item);
+                return TryEquipWeapon(item.GetComponent<Weapon>());
             default:
-                return false;
+                throw new System.NotImplementedException();
         }
     }
 
-    public bool TryUnequip(InventoryItemUI item)
+    public bool TryUnequip(Item item)
     {
-        switch (item.RepresentedItem.ItemType)
+        switch (item.ItemType)
         {
             case ItemType.Weapon:
-                return TryUnequipWeapon(item);
+                return TryUnequipWeapon(item.GetComponent<Weapon>());
             default:
-                return false;
+                throw new System.NotImplementedException();
         }
     }
     
-    public bool TryEquipWeapon(InventoryItemUI item)
+    public bool TryEquipWeapon(Weapon weapon)
     {
-        if (item.RepresentedItem.ItemType != ItemType.Weapon) return false;
-        if (WeaponInventoryItem == null || WeaponInventoryItem.RepresentedItem.IsToBeReplaced() ||
-        WeaponInventoryItem == item)
+        if (WeaponItem == null || WeaponItem.IsToBeReplaced() ||
+        WeaponItem == weapon)
         {
-            WeaponInventoryItem = item;
+            WeaponItem = weapon;
             return true;
         }
         return false;
     }
 
-    public bool TryUnequipWeapon(InventoryItemUI item)
+    public bool TryUnequipWeapon(Weapon weapon)
     {
-        if (item.RepresentedItem.ItemType != ItemType.Weapon) return false;
-        if (WeaponInventoryItem == item) 
+        if (WeaponItem == weapon) 
         {
-            WeaponInventoryItem = null;
+            WeaponItem = null;
             return true;
         }
         return false;
+    }
+
+    public bool TryEquipHelmet(Item item)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public bool TryUnequipHelmet(Item item)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public bool TryEquipChest(Item item)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public bool TryUnequipChest(Item item)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public bool TryEquipLegs(Item item)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public bool TryUnequipLegs(Item item)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public bool TryEquipBoots(Item item)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public bool TryUnequipBoots(Item item)
+    {
+        throw new System.NotImplementedException();
     }
 }

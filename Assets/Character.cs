@@ -68,99 +68,6 @@ public class Character : MonoBehaviour
 
     void Start()
     {   
-        OnDamageTaken += (args) => { 
-            ApplyDamage(args.Damage, args.StatusEffects);
-            AudioManager.Instance.PlayHurtSound(audioSource);
-            RecalculateStats(); 
-        };
-
-        OnJump += () => {
-            if (IsGrounded && Energy > _jumpEnergy && _justJumped == false)
-            {
-                AudioManager.Instance.PlayJumpSound(audioSource);
-                rigidBody.velocity = new Vector3(rigidBody.velocity.x, 0f, rigidBody.velocity.z);
-                rigidBody.AddForce(transform.up * JumpForce, ForceMode.Impulse);
-                Energy -= _jumpEnergy;
-                _justJumped = true;
-            }
-        };
-
-        OnAddStatusEffect += (effect) => {
-            bool contains = false;
-            int index = -1;
-            foreach (var appliedStatusEffect in _appliedStatusEffects)
-            {
-                if (appliedStatusEffect.StatusEffect == effect)
-                {
-                    contains = true;
-                    index = _appliedStatusEffects.IndexOf(appliedStatusEffect);
-                    break;
-                }
-            }
-            if (contains)
-            {
-                if (effect.IsStackable == false)
-                {
-                    _appliedStatusEffects[index].TimeLeft = effect.Duration;
-                } else {
-                    var newStatusEffect = new AppliedStatusEffect
-                    {
-                        StatusEffect = effect,
-                        TimeLeft = effect.Duration
-                    };
-                    _appliedStatusEffects.Add(newStatusEffect);
-                }
-            }
-            else
-            {
-                var newStatusEffect = new AppliedStatusEffect
-                    {
-                        StatusEffect = effect,
-                        TimeLeft = effect.Duration
-                    };
-                _appliedStatusEffects.Add(newStatusEffect);
-            }
-            RecalculateStats();
-        };
-
-        OnRemoveStatusEffect += (effect) => {
-            bool contains = false;
-            int index = -1;
-            foreach (var appliedStatusEffect in _appliedStatusEffects)
-            {
-                if (appliedStatusEffect.StatusEffect == effect)
-                {
-                    contains = true;
-                    index = _appliedStatusEffects.IndexOf(appliedStatusEffect);
-                    break;
-                }
-            }
-            if (contains)
-            {
-                _appliedStatusEffects.RemoveAt(index);
-            }
-            RecalculateStats();
-        };
-
-        OnRemoveAppliedStatusEffect += (appliedStatusEffect) => {
-            bool contains = false;
-            int index = -1;
-            foreach (var statusEffect in _appliedStatusEffects)
-            {
-                if (statusEffect == appliedStatusEffect)
-                {
-                    contains = true;
-                    index = _appliedStatusEffects.IndexOf(statusEffect);
-                    break;
-                }
-            }
-            if (contains)
-            {
-                _appliedStatusEffects.RemoveAt(index);
-            }
-            RecalculateStats();
-        };
-
         RecalculateStats();
         Health = MaxHealth;
         Mana = MaxMana;
@@ -200,21 +107,96 @@ public class Character : MonoBehaviour
 
     public void Jump()
     {
-        OnJump?.Invoke();
+        if (IsGrounded && Energy > _jumpEnergy && _justJumped == false)
+        {
+            AudioManager.Instance.PlayJumpSound(audioSource);
+            rigidBody.velocity = new Vector3(rigidBody.velocity.x, 0f, rigidBody.velocity.z);
+            rigidBody.AddForce(transform.up * JumpForce, ForceMode.Impulse);
+            Energy -= _jumpEnergy;
+            _justJumped = true;
+            OnJump?.Invoke();   
+        }
     }
 
     public void AddStatusEffect(StatusEffect statusEffect)
     {
+        bool contains = false;
+        int index = -1;
+        foreach (var appliedStatusEffect in _appliedStatusEffects)
+        {
+            if (appliedStatusEffect.StatusEffect == statusEffect)
+            {
+                contains = true;
+                index = _appliedStatusEffects.IndexOf(appliedStatusEffect);
+                break;
+            }
+        }
+        if (contains)
+        {
+            if (statusEffect.IsStackable == false)
+            {
+                _appliedStatusEffects[index].TimeLeft = statusEffect.Duration;
+            } else {
+                var newStatusEffect = new AppliedStatusEffect
+                {
+                    StatusEffect = statusEffect,
+                    TimeLeft = statusEffect.Duration
+                };
+                _appliedStatusEffects.Add(newStatusEffect);
+            }
+        }
+        else
+        {
+            var newStatusEffect = new AppliedStatusEffect
+            {
+                StatusEffect = statusEffect,
+                TimeLeft = statusEffect.Duration
+            };
+            _appliedStatusEffects.Add(newStatusEffect);
+        }
+        RecalculateStats();
         OnAddStatusEffect?.Invoke(statusEffect);
     }
 
     public void RemoveStatusEffect(StatusEffect statusEffect)
     {
+        bool contains = false;
+        int index = -1;
+        foreach (var appliedStatusEffect in _appliedStatusEffects)
+        {
+            if (appliedStatusEffect.StatusEffect == statusEffect)
+            {
+                contains = true;
+                index = _appliedStatusEffects.IndexOf(appliedStatusEffect);
+                break;
+            }
+        }
+        if (contains)
+        {
+            _appliedStatusEffects.RemoveAt(index);
+        }
+        RecalculateStats();
         OnRemoveStatusEffect?.Invoke(statusEffect);
     }
 
     public void RemoveStatusEffect(AppliedStatusEffect appliedStatusEffect)
     {
+        bool contains = false;
+        int index = -1;
+        foreach (var statusEffect in _appliedStatusEffects)
+        {
+            if (statusEffect == appliedStatusEffect)
+            {
+                contains = true;
+                index = _appliedStatusEffects.IndexOf(statusEffect);
+                break;
+            }
+        }
+        if (contains)
+        {
+            _appliedStatusEffects.RemoveAt(index);
+        }
+        RecalculateStats();
         OnRemoveAppliedStatusEffect?.Invoke(appliedStatusEffect);
     }
 
@@ -448,7 +430,8 @@ public class Character : MonoBehaviour
     {
         var ray = new Ray(transform.position, Vector3.down);
 
-        if (IsGrounded == false){
+        if (IsGrounded == false)
+            {
             Physics.Raycast(ray, out var hit, 100000f);
             var currentDistanceToGround = hit.distance;
             if (_previousDistanceToGround == 0){
@@ -489,6 +472,9 @@ public class Character : MonoBehaviour
 
     public void TakeDamage(DamageArgs args)
     {
+        ApplyDamage(args.Damage, args.StatusEffects);
+        AudioManager.Instance.PlayHurtSound(audioSource);
+        RecalculateStats(); 
         OnDamageTaken?.Invoke(args);
     }
 
@@ -557,8 +543,8 @@ public class Character : MonoBehaviour
 
     public void AttackPrimary(Vector3 dir)
     {
-        if (Equipment.WeaponInventoryItem == null) return;
-        var weapon = Equipment.WeaponInventoryItem.RepresentedItem.GetComponent<Weapon>();
+        if (Equipment.WeaponItem == null) return;
+        var weapon = Equipment.WeaponItem.GetComponent<Weapon>();
         if (weapon.IsReady == false) return;
         if (weapon.IsAttacking) return;
         StartCoroutine(nameof(AttackPrimaryCoroutine), dir);
@@ -566,7 +552,7 @@ public class Character : MonoBehaviour
 
     IEnumerator AttackPrimaryCoroutine(Vector3 dir)
     {
-        var weapon = Equipment.WeaponInventoryItem.RepresentedItem.GetComponent<Weapon>();
+        var weapon = Equipment.WeaponItem.GetComponent<Weapon>();
         weapon.IsAttacking = true;
         var middle_of_character = transform.position + col.bounds.extents.y * transform.up;
         var ray = new Ray(middle_of_character, dir);
@@ -672,7 +658,7 @@ public class Character : MonoBehaviour
 
     IEnumerator PullOutWeaponCoroutine()
     {
-        var weapon = Equipment.WeaponInventoryItem.RepresentedItem.GetComponent<Weapon>();
+        var weapon = Equipment.WeaponItem.GetComponent<Weapon>();
         yield return new WaitForSeconds(weapon.basePullOutTime);
         weapon.IsReady = true;
         // TODO: Add animation
@@ -680,16 +666,16 @@ public class Character : MonoBehaviour
         var thisy = transform.position.y + col.bounds.extents.y / 2;
         var pos = new Vector3(transform.position.x, thisy, transform.position.z);
         var infront = pos + transform.forward;
-        Equipment.WeaponInventoryItem.SetActiveInWorld(true, infront, transform);
+        Equipment.WeaponItem.SetActiveInWorld(true, infront, transform);
     }
 
     IEnumerator PutAwayWeaponCoroutine()
     {
-        var weapon = Equipment.WeaponInventoryItem.RepresentedItem.GetComponent<Weapon>();
+        var weapon = Equipment.WeaponItem.GetComponent<Weapon>();
         yield return new WaitForSeconds(weapon.basePullOutTime);
         weapon.IsReady = false;
         // TODO: Add animation
         // TODO: This is a temporary solution
-        Equipment.WeaponInventoryItem.SetActiveInWorld(false);
+        Equipment.WeaponItem.SetActiveInWorld(false);
     }
 }

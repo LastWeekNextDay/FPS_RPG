@@ -52,4 +52,18 @@ public class Item : MonoBehaviour
         }
         return false;
     }
+
+    public void SetActiveInWorld(bool active, Vector3 pos = default, Transform parent = null)
+    {
+        if (active)
+        {
+            transform.position = pos;
+        }
+        else
+        {
+            transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+        }
+        gameObject.SetActive(active);
+        transform.SetParent(parent);   
+    }
 }

@@ -16,11 +16,11 @@ public class InventorySlot : MonoBehaviour
 {
     [NonSerialized] public int backpackSlotIndex;
     public SlotType slotType;
-    public InventoryItemUI attachedInventoryItem;
+    public InventoryItem attachedInventoryItem;
     public Backpack Backpack;
     public Equipment Equipment;
 
-    public void ForceAttach(InventoryItemUI item)
+    public void AssignVisual(InventoryItem item)
     {
         attachedInventoryItem = item;
         attachedInventoryItem.transform.SetParent(transform);
@@ -29,10 +29,9 @@ public class InventorySlot : MonoBehaviour
         attachedInventoryItem.slotAttachedTo = this;
     }
 
-    public void ForceDetach()
+    public void UnassignVisual()
     {
         attachedInventoryItem.slotAttachedTo = null;
-        attachedInventoryItem.transform.SetParent(null);
         attachedInventoryItem = null;
     }
 
@@ -52,81 +51,103 @@ public class InventorySlot : MonoBehaviour
         }
     }
 
-    public void Attach(InventoryItemUI item)
+    public void Assign(InventoryItem invItem)
     {
-        if (attachedInventoryItem == null || attachedInventoryItem.RepresentedItem.IsToBeReplaced())
+        if (IsEquipmentSlot())
         {
-            if (item.slotType != slotType)
-            {
-                item.CancelSelection();
-            }
-            // If this is an equipment slot, do special checks
-            if (IsEquipmentSlot())
+            if (attachedInventoryItem == null || attachedInventoryItem.RepresentedItem.IsToBeReplaced())
             {
                 switch (slotType)
                 {
                     case SlotType.EquipmentWeaponPrimary:
                         // Remove the temporary equipment item first
-                        if (Equipment.WeaponInventoryItem != null){
-                            if (Equipment.WeaponInventoryItem.RepresentedItem.IsToBeReplaced())
+                        if (Equipment.WeaponItem != null){
+                            if (Equipment.WeaponItem.GetComponent<Weapon>().IsReady ||
+                                Equipment.WeaponItem.GetComponent<Weapon>().IsAttacking)
                             {
-                                if (Equipment.WeaponInventoryItem.RepresentedItem.GetComponent<Weapon>().IsReady ||
-                                    Equipment.WeaponInventoryItem.RepresentedItem.GetComponent<Weapon>().IsAttacking)
-                                {
-                                        return;
-                                }
-                                Destroy(Equipment.WeaponInventoryItem.RepresentedItem);
-                                Destroy(Equipment.WeaponInventoryItem);  
+                                    invItem.CancelSelection();
+                                    return;
+                            }
+                            if (Equipment.WeaponItem.IsToBeReplaced())
+                            {
+                                Destroy(Equipment.WeaponItem);  
                             }
                         }
-                        if (item.RepresentedItem.GetComponent<Weapon>().IsTwoHanded == false)
+                        if (invItem.RepresentedItem.GetComponent<Weapon>().IsTwoHanded == false)
                         {
                             // TODO: Special checkif two handed.
                         }
-                        if (Equipment.WeaponInventoryItem == null)
+                        if (Equipment.WeaponItem == null)
                         {
-                            if (item.slotAttachedTo != null){
-                                item.slotAttachedTo.ForceDetach();
+                            if (Equipment.TryEquip(invItem.RepresentedItem)){
+                                if (invItem.slotAttachedTo != null){
+                                    invItem.slotAttachedTo.Unassign();
+                                }
+                                AssignVisual(invItem);
+                                invItem.isEquipped = true;
+                                invItem.equippedBy = Equipment.Owner;
+                                return;
+                            } else {
+                                invItem.CancelSelection();
+                                return;
                             }
-                            item.EquipOn(Equipment.Owner, this);
-                            return;
                         }
                         return; 
                     default:
-                        item.CancelSelection();
-                        return;
+                        throw new NotImplementedException();
                 }
-            } else {
-                if (item.slotAttachedTo != null)
-                {
-                    // If the item trying to attach is already attached to a slot, and that slot is an equipment slot
-                    // Unequip it first
-                    if (item.slotAttachedTo.IsEquipmentSlot())
-                    {
-                        switch (item.slotAttachedTo.slotType)
-                        {
-                            case SlotType.EquipmentWeaponPrimary:
-                                var invItem = item.slotAttachedTo.Equipment.WeaponInventoryItem;
-                                invItem.UnequipFrom(item.slotAttachedTo.Equipment.Owner, invItem.slotAttachedTo);
-                                if (invItem.RepresentedItem.IsToBeReplaced())
-                                {
-                                    Destroy(invItem.RepresentedItem);
-                                    Destroy(invItem);
-                                    return;  
-                                }
-                                break;
-                        }  
-                    } else {
-                        item.slotAttachedTo.Backpack.TryRemoveItem(item);
-                    }
-                    item.slotAttachedTo.ForceDetach();
-                }
-                ForceAttach(item);
-                Backpack.TryChangeItemPosition(item, backpackSlotIndex);
             }
-            return; 
+        } 
+        else if (attachedInventoryItem == null)
+        {
+            if (invItem.slotAttachedTo != null)
+            {
+                invItem.slotAttachedTo.Unassign();
+            }
+            if (Backpack.TryChangeItemPosition(invItem.RepresentedItem, backpackSlotIndex))
+            {
+                AssignVisual(invItem);
+                invItem.isEquipped = false;
+                invItem.equippedBy = null;
+            }    
         } else {
-            item.CancelSelection();
+            invItem.CancelSelection();
+        }
+    }
+
+    public void Unassign()
+    {
+        if (IsEquipmentSlot())
+        {
+            switch (slotType)
+            {
+                case SlotType.EquipmentWeaponPrimary:
+                    var item = attachedInventoryItem;
+                    if (Equipment.TryUnequip(item.RepresentedItem.GetComponent<Weapon>()))
+                    {
+                        item.isEquipped = false;
+                        item.equippedBy = null;
+                        UnassignVisual();
+                    } else {
+                        return;
+                    }
+                    if (item.RepresentedItem.IsToBeReplaced())
+                    {
+                        Destroy(item.RepresentedItem);
+                        Destroy(item);
+                        return;  
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }  
+        } else {
+            if (Backpack.TryRemoveItem(attachedInventoryItem.RepresentedItem))
+            {
+                UnassignVisual();
+            } else {
+                return;
+            }
         }
     }
 }
