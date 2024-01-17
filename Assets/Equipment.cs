@@ -1,12 +1,39 @@
 public class Equipment
 {
     public InventoryItemUI WeaponInventoryItem;
+    public InventoryItemUI HelmetInventoryItem;
+    public InventoryItemUI ChestInventoryItem;
+    public InventoryItemUI LegsInventoryItem;
+    public InventoryItemUI BootsInventoryItem;
+    public Character Owner;
 
-    public Equipment()
+    public Equipment(Character owner)
     {
-        WeaponInventoryItem = null;
+        Owner = owner;
     }
 
+    public bool TryEquip(InventoryItemUI item)
+    {
+        switch (item.RepresentedItem.ItemType)
+        {
+            case ItemType.Weapon:
+                return TryEquipWeapon(item);
+            default:
+                return false;
+        }
+    }
+
+    public bool TryUnequip(InventoryItemUI item)
+    {
+        switch (item.RepresentedItem.ItemType)
+        {
+            case ItemType.Weapon:
+                return TryUnequipWeapon(item);
+            default:
+                return false;
+        }
+    }
+    
     public bool TryEquipWeapon(InventoryItemUI item)
     {
         if (item.RepresentedItem.ItemType != ItemType.Weapon) return false;

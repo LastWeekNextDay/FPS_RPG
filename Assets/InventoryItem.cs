@@ -13,6 +13,7 @@ public class InventoryItemUI : MonoBehaviour
     [NonSerialized] public InventorySlot slotAttachedTo;
     public Image imageRenderer;
     public Sprite DefaultIcon;
+    [NonSerialized] public SlotType slotType;
 
     public Action OnMouseAttach;
     public Action<InventorySlot> OnAttachToSlot;
@@ -22,15 +23,17 @@ public class InventoryItemUI : MonoBehaviour
     public Action<Character, InventorySlot> OnUnequip;
 
     private GameObject _canvasObject;
+    private Character playerChar;
 
     void Start()
     {
         _canvasObject = GameObject.Find("Canvas");
+        var Player = GameObject.Find("Player");
+        playerChar = Player.GetComponent<Character>();
+
         OnMouseAttach += () => 
         {
             AudioManager.Instance.PlayPickupInventoryItemSound();
-            var Player = GameObject.Find("Player");
-            var playerChar = Player.GetComponent<Character>();
             var itemType = RepresentedItem.ItemType;
             switch(itemType)
             {
@@ -40,7 +43,7 @@ public class InventoryItemUI : MonoBehaviour
                         if (playerChar.Equipment.WeaponInventoryItem.RepresentedItem.GetComponent<Weapon>().IsAttacking ||
                             playerChar.Equipment.WeaponInventoryItem.RepresentedItem.GetComponent<Weapon>().IsReady)
                         {
-                            OnCancelSelection?.Invoke();
+                            CancelSelection();
                             return;
                         }
                     }
@@ -48,9 +51,9 @@ public class InventoryItemUI : MonoBehaviour
             }
             if (slotAttachedTo != null)
             {
-                if (slotAttachedTo.isEquipmentSlot)
+                if (slotAttachedTo.IsEquipmentSlot())
                 {
-                    OnUnequip?.Invoke(playerChar, slotAttachedTo);
+                    UnequipFrom(playerChar, slotAttachedTo);
                 }
             }
             transform.SetParent(_canvasObject.transform);
@@ -59,93 +62,27 @@ public class InventoryItemUI : MonoBehaviour
         OnAttachToSlot += (slot) => 
         {
             AudioManager.Instance.PlayPickupInventoryItemSound();
-            var Player = GameObject.Find("Player");
-            var playerChar = Player.GetComponent<Character>();
+
             if (slot != null)
             {
-                if (slot.invItem == null || slot.invItem.RepresentedItem.IsToBeReplaced())
-                {
-                    if (slot.isEquipmentSlot)
-                    {
-                        switch (slot.name)
-                        {
-                            case "Weapon1Holder":
-                                if (RepresentedItem.ItemType != ItemType.Weapon)
-                                {
-                                    OnCancelSelection?.Invoke();
-                                    return;
-                                }
-                                if (playerChar.Equipment.WeaponInventoryItem != null){
-                                    if (playerChar.Equipment.WeaponInventoryItem.RepresentedItem.IsToBeReplaced())
-                                    {
-                                        Destroy(playerChar.Equipment.WeaponInventoryItem.RepresentedItem);
-                                        Destroy(playerChar.Equipment.WeaponInventoryItem);  
-                                    }
-                                }
-                                if (RepresentedItem.GetComponent<Weapon>().IsTwoHanded == false)
-                                {
-                                    // TODO: Special checkif two handed.
-                                }
-                                if (playerChar.Equipment.WeaponInventoryItem == null)
-                                {
-                                    if (slotAttachedTo != null){
-                                        slotAttachedTo.Detach();
-                                    }
-                                    OnEquip?.Invoke(playerChar, slot);
-                                    return;
-                                }
-                                return; 
-                            default:
-                                OnCancelSelection?.Invoke();
-                                return;
-                        }
-                    } else {
-                        if (slotAttachedTo != null)
-                        {
-                            if (slotAttachedTo.isEquipmentSlot)
-                            {
-                                switch (slotAttachedTo.name)
-                                {
-                                    case "Weapon1Holder":
-                                        var invItem = playerChar.Equipment.WeaponInventoryItem;
-                                        OnUnequip?.Invoke(playerChar, slotAttachedTo);
-                                        if (invItem.RepresentedItem.IsToBeReplaced())
-                                        {
-                                            Destroy(invItem.RepresentedItem);
-                                            Destroy(invItem);
-                                            return;  
-                                        }
-                                        break;
-                                }
-                            } else {
-                                slotAttachedTo.Backpack.TryRemoveItem(this);
-                                slotAttachedTo.Detach();
-                            }
-                        }
-                        slot.Attach(this);
-                        slot.Backpack.TryChangeItemPosition(this, slot.backpackSlotIndex);
-                    }
-                    return; 
-                } else {
-                    OnCancelSelection?.Invoke();
-                }
+                slot.Attach(this);
             }
         };
 
         OnCancelSelection += () => 
         {
             AudioManager.Instance.PlayCancelInventoryItemPickupSound();
-            var Player = GameObject.Find("Player");
-            var playerChar = Player.GetComponent<Character>();
+            var player = GameObject.Find("Player");
+            var playerChar = player.GetComponent<Character>();
+
+            // If attached to slot, attach back, and if it's an equipment slot, equip the item back on
+            // Else, try to add back to backpack, and if there is no space, drop in front of you
             if (slotAttachedTo != null)
             {
-                if (slotAttachedTo.Backpack == playerChar.Backpack)
+                slotAttachedTo.ForceAttach(this);
+                if (slotAttachedTo.IsEquipmentSlot())
                 {
-                    slotAttachedTo.Attach(this);
-                    if (slotAttachedTo.isEquipmentSlot)
-                    {
-                        OnEquip?.Invoke(playerChar, slotAttachedTo);
-                    }
+                    EquipOn(slotAttachedTo.Equipment.Owner, slotAttachedTo);
                 }
             } else {
                 if (playerChar.Backpack.TryAddItem(this) == false)
@@ -163,18 +100,14 @@ public class InventoryItemUI : MonoBehaviour
         OnDrop += (character, pos) => 
         {
             AudioManager.Instance.PlayDropItemSound();
-            var Player = GameObject.Find("Player");
-            var playerChar = Player.GetComponent<Character>();
             if (slotAttachedTo != null)
             {
-                if (slotAttachedTo.Backpack == playerChar.Backpack)
+                if (slotAttachedTo.IsEquipmentSlot())
                 {
-                    if (slotAttachedTo.isEquipmentSlot)
-                    {
-                        OnUnequip?.Invoke(playerChar, slotAttachedTo);
-                    }
+                    UnequipFrom(character, slotAttachedTo);
                 }
             }
+
             var rb = RepresentedItem.GetComponent<Rigidbody>();
             if (rb != null)
             {
@@ -186,6 +119,7 @@ public class InventoryItemUI : MonoBehaviour
             {
                 collider.isTrigger = false;
             }
+
             SetActiveInWorld(true, pos);
             DestroyInventoryItem();
             character.Backpack.TryRemoveItem(this);
@@ -193,34 +127,41 @@ public class InventoryItemUI : MonoBehaviour
 
         OnEquip += (character, slot) => 
         {
-            var Player = GameObject.Find("Player");
-            var playerChar = Player.GetComponent<Character>();
-            if (RepresentedItem.ItemType == ItemType.Weapon)
+            if (character.Equipment.TryEquip(this) == false)
             {
-                if (playerChar.Equipment.TryEquipWeapon(this) == false)
-                {
-                    OnCancelSelection?.Invoke();
-                    return;
-                }
+                CancelSelection();
+                return;
             }
-            slot.Attach(this);
-            playerChar.Backpack.TryRemoveItem(this);
+            slot.ForceAttach(this);
+            character.Backpack.TryRemoveItem(this);
         };
 
         OnUnequip += (character, slot) => 
         {
-            var Player = GameObject.Find("Player");
-            var playerChar = Player.GetComponent<Character>();
-            if (RepresentedItem.ItemType == ItemType.Weapon)
+            if (character.Equipment.TryUnequip(this) == false)
             {
-                if (character.Equipment.TryUnequipWeapon(this) == false)
-                {
-                    OnCancelSelection?.Invoke();
-                    return;
-                }
+                CancelSelection();
+                return;
             }
-            slotAttachedTo.Detach();
+            slotAttachedTo.ForceDetach();
         };
+    }
+
+    public bool IsEquipment()
+    {
+        var isEquipment = false;
+        switch (slotType)
+        {
+            case SlotType.EquipmentWeaponPrimary:
+            case SlotType.EquipmentWeaponSecondary:
+            case SlotType.EquipmentArmorHead:
+            case SlotType.EquipmentArmorChest:
+            case SlotType.EquipmentArmorLegs:
+            case SlotType.EquipmentArmorFeet:
+                isEquipment = true;
+                break;
+        }
+        return isEquipment;
     }
 
     public void AttachItemAsInventoryItem(Item item)
@@ -251,7 +192,17 @@ public class InventoryItemUI : MonoBehaviour
         {
             image = DefaultIcon;
         }
-        imageRenderer.sprite = image;     
+        imageRenderer.sprite = image;
+
+        switch (item.ItemType)
+        {
+            case ItemType.Weapon:
+                slotType = SlotType.EquipmentWeaponPrimary;
+                break;
+            default:
+                slotType = SlotType.Backpack;
+                break;
+        }
     }
 
     public void SetActiveInWorld(bool active, Vector3 pos = default, Transform parent = null)
@@ -287,6 +238,19 @@ public class InventoryItemUI : MonoBehaviour
         {
             return;
         }
+        if (slotType == SlotType.EquipmentWeaponPrimary)
+        {
+            if (playerChar.Equipment.WeaponInventoryItem != null)
+            {
+                if (RepresentedItem == playerChar.Equipment.WeaponInventoryItem){
+                    if (playerChar.Equipment.WeaponInventoryItem.RepresentedItem.GetComponent<Weapon>().IsAttacking ||
+                    playerChar.Equipment.WeaponInventoryItem.RepresentedItem.GetComponent<Weapon>().IsReady)
+                    {
+                        return;
+                    }
+                }
+            }
+        }
         isSelected = true;
         transform.SetParent(_canvasObject.transform);
         transform.SetSiblingIndex(transform.parent.childCount - 1);
@@ -299,6 +263,19 @@ public class InventoryItemUI : MonoBehaviour
         {
             return;
         }
+        if (slotType == SlotType.EquipmentWeaponPrimary)
+        {
+            if (playerChar.Equipment.WeaponInventoryItem != null)
+            {
+                if (RepresentedItem == playerChar.Equipment.WeaponInventoryItem){
+                    if (playerChar.Equipment.WeaponInventoryItem.RepresentedItem.GetComponent<Weapon>().IsAttacking ||
+                    playerChar.Equipment.WeaponInventoryItem.RepresentedItem.GetComponent<Weapon>().IsReady)
+                    {
+                        return;
+                    }
+                }
+            }
+        }
         var mousePosition = Input.mousePosition;
         transform.position = mousePosition;
     }
@@ -308,6 +285,19 @@ public class InventoryItemUI : MonoBehaviour
         if (RepresentedItem.IsToBeReplaced() || RepresentedItem.IsMovableFromSlot() == false)
         {
             return;
+        }
+        if (slotType == SlotType.EquipmentWeaponPrimary)
+        {
+            if (playerChar.Equipment.WeaponInventoryItem != null)
+            {
+                if (RepresentedItem == playerChar.Equipment.WeaponInventoryItem){
+                    if (playerChar.Equipment.WeaponInventoryItem.RepresentedItem.GetComponent<Weapon>().IsAttacking ||
+                    playerChar.Equipment.WeaponInventoryItem.RepresentedItem.GetComponent<Weapon>().IsReady)
+                    {
+                        return;
+                    }
+                }
+            }
         }
 
         isSelected = false;
@@ -320,6 +310,10 @@ public class InventoryItemUI : MonoBehaviour
         };
         var hits = new List<RaycastResult>();
         rayCaster.Raycast(pointerEventData, hits);
+
+        // Go through all hits in a hierarhical order
+        // 1. Item Slot
+        // 2. UI
 
         foreach (var hit in hits)
         {
@@ -342,7 +336,7 @@ public class InventoryItemUI : MonoBehaviour
             }
             if (hit.gameObject.layer == LayerMask.NameToLayer("UI"))
             {
-                OnCancelSelection?.Invoke();
+                CancelSelection();
                 return;
             }
         }
@@ -369,5 +363,20 @@ public class InventoryItemUI : MonoBehaviour
             worldPosition = Camera.main.transform.position + delta;
         }
         return worldPosition;
+    }
+
+    public void CancelSelection()
+    {
+        OnCancelSelection?.Invoke();
+    }
+
+    public void EquipOn(Character character, InventorySlot slot)
+    {
+        OnEquip?.Invoke(character, slot);
+    }
+
+    public void UnequipFrom(Character character, InventorySlot slot)
+    {
+        OnUnequip?.Invoke(character, slot);
     }
 }

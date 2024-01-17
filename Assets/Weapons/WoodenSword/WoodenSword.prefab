@@ -127,7 +127,7 @@ MonoBehaviour:
   weaponBaseType: 1
   baseDamage: 1
   baseAttackSpeed: 0.5
-  baseRange: 1
+  baseRange: 3
   baseWindupTime: 0.25
   basePullOutTime: 0.1
   baseAttackTime: 0.5

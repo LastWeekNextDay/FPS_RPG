@@ -1,9 +1,11 @@
 public class Backpack
 {
     public InventoryItemUI[] InventoryItems;
+    public Character Owner;
 
-    public Backpack()
+    public Backpack(Character owner)
     {
+        Owner = owner;
         InventoryItems = new InventoryItemUI[28];
     }
 

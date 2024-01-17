@@ -44,16 +44,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a422a3548ea1c742ad148637829438a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  IsInteractable: 0
+  IsForcefullyEquipped: 0
+  itemIcon: {fileID: 10901, guid: 0000000000000000f000000000000000, type: 0}
   weaponName: Fists
   mainAttackType: 0
   weaponBaseType: 0
   baseDamage: 1
   baseAttackSpeed: 1
-  baseRange: 1
+  baseRange: 2
   baseWindupTime: 0.1
   basePullOutTime: 0.1
   baseAttackTime: 0.2
-  itemIcon: {fileID: 10901, guid: 0000000000000000f000000000000000, type: 0}
   IsTwoHanded: 0
-  IsInteractable: 0
-  IsForcefullyEquipped: 0

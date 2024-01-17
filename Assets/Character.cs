@@ -62,8 +62,8 @@ public class Character : MonoBehaviour
     void Awake()
     {
         _appliedStatusEffects = new();
-        Backpack = new();
-        Equipment = new();
+        Backpack = new(this);
+        Equipment = new(this);
     }
 
     void Start()
@@ -560,6 +560,7 @@ public class Character : MonoBehaviour
         if (Equipment.WeaponInventoryItem == null) return;
         var weapon = Equipment.WeaponInventoryItem.RepresentedItem.GetComponent<Weapon>();
         if (weapon.IsReady == false) return;
+        if (weapon.IsAttacking) return;
         StartCoroutine(nameof(AttackPrimaryCoroutine), dir);
     }
 

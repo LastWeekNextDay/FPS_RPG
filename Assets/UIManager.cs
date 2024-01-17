@@ -430,7 +430,7 @@ public class UIManager : MonoBehaviour
             foreach (Transform child in row.transform)
             {
                 var slot = child.gameObject.GetComponent<InventorySlot>();
-                if (slot.invItem == null)
+                if (slot.attachedInventoryItem == null)
                 {
                     return slot;
                 }
@@ -460,16 +460,16 @@ public class UIManager : MonoBehaviour
                 slot.backpackSlotIndex = UIIndex;
                 if (backpack.InventoryItems[UIIndex] != null)
                 {
-                    if (slot.invItem == null)
+                    if (slot.attachedInventoryItem == null)
                     {
-                        slot.Attach(backpack.InventoryItems[UIIndex]);
+                        slot.ForceAttach(backpack.InventoryItems[UIIndex]);
                     }
                 }
                 else if (backpack.InventoryItems[UIIndex] == null)
                 {
-                    if (slot.invItem != null)
+                    if (slot.attachedInventoryItem != null)
                     {
-                        slot.Detach();
+                        slot.ForceDetach();
                     }
                 }
                 UIIndex++;
@@ -486,21 +486,23 @@ public class UIManager : MonoBehaviour
         foreach (Transform child in equipmentUI.transform)
         {
             var slot = child.gameObject.GetComponent<InventorySlot>();
-            switch (slot.name)
+            slot.Equipment = equipment;
+            slot.Backpack = equipment.Owner.Backpack;
+            switch (slot.slotType)
             {
-                case "Weapon1Holder":
+                case SlotType.EquipmentWeaponPrimary:
                     if (equipment.WeaponInventoryItem != null && equipment.WeaponInventoryItem.RepresentedItem.IsToBeReplaced() == false)
                     {
-                        if (slot.invItem == null)
+                        if (slot.attachedInventoryItem == null)
                         {
-                            slot.Attach(equipment.WeaponInventoryItem);
+                            slot.ForceAttach(equipment.WeaponInventoryItem);
                         }
                     }
                     else if (equipment.WeaponInventoryItem == null || equipment.WeaponInventoryItem.RepresentedItem.IsToBeReplaced() == true)
                     {
-                        if (slot.invItem != null)
+                        if (slot.attachedInventoryItem != null)
                         {
-                            slot.Detach();
+                            slot.ForceDetach();
                         }
                     }
                     break;
@@ -524,9 +526,9 @@ public class UIManager : MonoBehaviour
             foreach (Transform child in row.transform)
             {
                 var slot = child.gameObject.GetComponent<InventorySlot>();
-                if (slot.invItem != null)
+                if (slot.attachedInventoryItem != null)
                 {
-                    slot.Detach();
+                    slot.ForceDetach();
                 }
             }
         }
@@ -541,9 +543,9 @@ public class UIManager : MonoBehaviour
         foreach (Transform child in equipmentUI.transform)
         {
             var slot = child.gameObject.GetComponent<InventorySlot>();
-            if (slot.invItem != null)
+            if (slot.attachedInventoryItem != null)
             {
-                slot.Detach();
+                slot.ForceDetach();
             }
         }
     }
@@ -606,9 +608,9 @@ public class UIManager : MonoBehaviour
         {
             return false;
         }
-        if (itemSlot.invItem == null)
+        if (itemSlot.attachedInventoryItem == null)
         {
-            itemSlot.Attach(item);
+            itemSlot.ForceAttach(item);
             return true;
         }
         return false;
@@ -620,9 +622,9 @@ public class UIManager : MonoBehaviour
         {
             return false;
         }
-        if (itemSlot.invItem != null)
+        if (itemSlot.attachedInventoryItem != null)
         {
-            itemSlot.Detach();
+            itemSlot.ForceDetach();
             return true;
         }
         return false;

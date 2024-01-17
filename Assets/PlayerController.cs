@@ -28,6 +28,10 @@ public class PlayerController : MonoBehaviour
             AudioManager.Instance.PlayPickupItemSound();
             var invItem = UIManager.Instance.MakeItemIntoInventoryItemUI(obj);
             character.Backpack.TryAddItem(invItem);
+            if (UIManager.Instance.IsInventoryOpen)
+            {
+                UIManager.Instance.RefreshBackpackItemsUI(UIManager.Instance.GetPlayerBackpackUI(), character.Backpack);
+            }
         };
 
         OnPrimaryAction += () => {
