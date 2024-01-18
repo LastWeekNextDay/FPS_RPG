@@ -16,12 +16,12 @@ public class InventoryItem : MonoBehaviour
     public Sprite DefaultIcon;
     [NonSerialized] public SlotType slotType;
 
-    public Action OnMouseAttach;
-    public Action OnMouseDetach;
-    public Action OnCancelSelection;
-    public Action<Character, Vector3> OnDrop;
-    public Action<Character, InventorySlot> OnEquip;
-    public Action<Character, InventorySlot> OnUnequip;
+    public static Action<MouseAttachArgs> OnMouseAttach;
+    public static Action<MouseDetachArgs> OnMouseDetach;
+    public static Action<CancelSelectionArgs> OnCancelSelection;
+    public static Action<DropArgs> OnDrop;
+    public static Action<EquipArgs> OnEquip;
+    public static Action<UnequipArgs> OnUnequip;
 
     private GameObject _canvasObject;
     private Character playerChar;
@@ -134,7 +134,6 @@ public class InventoryItem : MonoBehaviour
         }
 
         isSelected = true;
-        AudioManager.Instance.PlayPickupInventoryItemSound();
 
         if (slotAttachedTo != null)
         {
@@ -146,8 +145,11 @@ public class InventoryItem : MonoBehaviour
 
         transform.SetParent(_canvasObject.transform);
         transform.SetSiblingIndex(transform.parent.childCount - 1);
-
-        OnMouseAttach?.Invoke();
+        var args = new MouseAttachArgs
+        {
+            InventoryItem = this
+        };
+        OnMouseAttach?.Invoke(args);
     }
 
     public void FollowMouse()
@@ -234,14 +236,19 @@ public class InventoryItem : MonoBehaviour
             }
         }
 
+        var args = new MouseDetachArgs
+        {
+            InventoryItem = this
+        };
+        OnMouseDetach?.Invoke(args);
+
         var Player = GameObject.Find("Player");
         Drop(Player.GetComponent<Character>(), CalculateForwardPositionUsingCamera(Player.transform.position));
-        OnMouseDetach?.Invoke();
+        
     }
 
     public void Drop(Character fromWho, Vector3 where)
     {
-        AudioManager.Instance.PlayDropItemSound();
         if (slotAttachedTo != null)
         {
             slotAttachedTo.Unassign();
@@ -260,7 +267,13 @@ public class InventoryItem : MonoBehaviour
         }
 
         SetActiveInWorld(true, where);
-        OnDrop?.Invoke(fromWho, where);
+        var args = new DropArgs
+        {
+            Source = fromWho,
+            Item = RepresentedItem,
+            Position = where
+        };
+        OnDrop?.Invoke(args);
         DestroyInventoryItem();
     }
 
@@ -285,12 +298,14 @@ public class InventoryItem : MonoBehaviour
         {
             return;
         }
-        AudioManager.Instance.PlayCancelInventoryItemPickupSound();
+        
         var player = GameObject.Find("Player");
         var playerChar = player.GetComponent<Character>();
 
         // If attached to slot, attach back, and if it's an equipment slot, equip the item back on
         // Else, try to add back to backpack, and if there is no space, drop in front of you
+        
+        bool itemReadded = false;
         if (slotAttachedTo != null)
         {
             if (slotAttachedTo.IsEquipmentSlot() == false)
@@ -300,41 +315,33 @@ public class InventoryItem : MonoBehaviour
                 if (playerChar.Backpack.TryAddItem(RepresentedItem) == false)
                 {
                     Drop(playerChar, CalculateForwardPositionUsingCamera(player.transform.position));
-                    UIManager.Instance.RefreshBackpackItemsUI(UIManager.Instance.GetPlayerBackpackUI(),
-                        playerChar.Backpack);
-                    UIManager.Instance.RefreshEquipmentItemsUI(UIManager.Instance.GetPlayerEquipmentUI(),
-                        playerChar.Equipment);
                 } else {
-                    DestroyInventoryItem();
-                    UIManager.Instance.RefreshBackpackItemsUI(UIManager.Instance.GetPlayerBackpackUI(),
-                        playerChar.Backpack);
-                    UIManager.Instance.RefreshEquipmentItemsUI(UIManager.Instance.GetPlayerEquipmentUI(),
-                        playerChar.Equipment);
+                    itemReadded = true;   
                 }
             }
         } else {
             if (playerChar.Backpack.TryAddItem(RepresentedItem) == false)
             {
                 Drop(playerChar, CalculateForwardPositionUsingCamera(player.transform.position));
-                UIManager.Instance.RefreshBackpackItemsUI(UIManager.Instance.GetPlayerBackpackUI(),
-                    playerChar.Backpack);
-                UIManager.Instance.RefreshEquipmentItemsUI(UIManager.Instance.GetPlayerEquipmentUI(),
-                    playerChar.Equipment);
             } else {
-                DestroyInventoryItem();
-                UIManager.Instance.RefreshBackpackItemsUI(UIManager.Instance.GetPlayerBackpackUI(),
-                    playerChar.Backpack);
-                UIManager.Instance.RefreshEquipmentItemsUI(UIManager.Instance.GetPlayerEquipmentUI(),
-                    playerChar.Equipment);
+                itemReadded = true;
             }
         }
-        OnCancelSelection?.Invoke(); 
+
+        var args = new CancelSelectionArgs
+        {
+            InventoryItem = this
+        };
+        OnCancelSelection?.Invoke(args); 
+
+        if (itemReadded)
+        {
+            DestroyInventoryItem();
+        }
     }
 
     void AssignToSlot(InventorySlot slot)
     {
-        AudioManager.Instance.PlayPickupInventoryItemSound();
-
         if (slot != null)
         {
             slot.Assign(this);

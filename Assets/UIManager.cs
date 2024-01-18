@@ -80,6 +80,57 @@ public class UIManager : MonoBehaviour
     void Start()
     {
         AllowCursor(false);
+
+        PlayerViewController.OnMoveAround += () => {
+            CursorVisible(false);
+        };
+
+        PlayerViewController.OnReset += () => {
+            CursorVisible(true);
+            ResetCursor();
+        };
+
+        InventoryItem.OnCancelSelection += (_) => {
+            var player = GameObject.Find("Player");
+            var playerChar = player.GetComponent<Character>();
+            if (IsInventoryOpen)
+            {
+                RefreshBackpackItemsUI(GetPlayerBackpackUI(), playerChar.Backpack);
+                RefreshEquipmentItemsUI(GetPlayerEquipmentUI(), playerChar.Equipment);
+            }
+        };
+
+        Character.OnPickupItem += (args) => {
+            if (args.Source.GetComponent<PlayerController>() == null)
+            {
+                return;
+            }
+            if (IsInventoryOpen)
+            {
+                RefreshBackpackItemsUI(GetPlayerBackpackUI(), args.Source.Backpack);
+            }   
+        };
+
+        Character.OnWeaponPullout += (args) => {
+            if (args.Source.GetComponent<PlayerController>() == null)
+            {
+                return;
+            }
+            SetCombatReadyIndicatorColor(Color.red);
+        };
+
+        Character.OnWeaponPutaway += (args) => {
+            if (args.Source.GetComponent<PlayerController>() == null)
+            {
+                return;
+            }
+            SetCombatReadyIndicatorColor(Color.white);
+        };
+
+        PlayerController.OnSecondaryAction += (args) => {
+            ToggleInventory();
+            AllowCursor(IsInventoryOpen);
+        };
     }
 
     public void AllowCursor(bool b)

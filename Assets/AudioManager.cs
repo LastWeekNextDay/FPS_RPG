@@ -27,6 +27,17 @@ public class AudioManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
+    void Start()
+    {
+        LoadAudioSource();
+        InventoryItem.OnMouseAttach += (_) => PlayPickupInventoryItemSound();
+        InventoryItem.OnDrop += (_) => PlayDropItemSound();
+        InventoryItem.OnCancelSelection += (_) => PlayCancelInventoryItemPickupSound();
+        Character.OnPickupItem += (args) => PlayPickupItemSound(args.Source.audioSource);
+        Character.OnDamageTaken += (args) => PlayHurtSound(args.Target.audioSource);
+        Character.OnJump += (args) => PlayJumpSound(args.Source.audioSource);
+    }
+
     void LoadAudioSource()
     {
         if (_mainAudioSource == null)
@@ -35,15 +46,17 @@ public class AudioManager : MonoBehaviour
         }
     }
 
-    public void PlayPickupItemSound()
+    public void PlayPickupItemSound(AudioSource audioSource = null)
     {
-        LoadAudioSource();
-        _mainAudioSource.PlayOneShot(pickupItemSound);
+        if (audioSource == null)
+        {
+            audioSource = _mainAudioSource;
+        }
+        audioSource.PlayOneShot(pickupItemSound);
     }
 
     public void PlayPickupInventoryItemSound()
     {
-        LoadAudioSource();
         _mainAudioSource.PlayOneShot(pickupInventoryItemSound);
     }
 
@@ -51,7 +64,6 @@ public class AudioManager : MonoBehaviour
     {
         if (audioSource == null)
         {
-            LoadAudioSource();
             audioSource = _mainAudioSource;
         }
         audioSource.PlayOneShot(hurtSound);
@@ -59,13 +71,11 @@ public class AudioManager : MonoBehaviour
 
     public void PlayDropItemSound()
     {
-        LoadAudioSource();
         _mainAudioSource.PlayOneShot(dropItemSound);
     }
 
     public void PlayCancelInventoryItemPickupSound()
     {
-        LoadAudioSource();
         _mainAudioSource.PlayOneShot(cancelInventoryItemPickupSound);
     }
 
@@ -73,7 +83,6 @@ public class AudioManager : MonoBehaviour
     {
         if (audioSource == null)
         {
-            LoadAudioSource();
             audioSource = _mainAudioSource;
         }
         audioSource.PlayOneShot(jumpSound);

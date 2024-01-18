@@ -1,5 +1,4 @@
 using System;
-using Microsoft.Unity.VisualStudio.Editor;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -10,16 +9,16 @@ public class PlayerController : MonoBehaviour
     private readonly float _cameraDownLimit = 55f;
     private Vector3 _localEulerAngles;
     private float _mouseSensitivity;
-    public Action<Item> OnItemPickup;
-    public Action OnPrimaryAction;
-    public Action OnSecondaryAction;
-    public Action OnUseAction;
-    public Action OnWeaponPullout;
-    public Action OnWeaponPutaway;
+    public static Action<PrimaryActionArgs> OnPrimaryAction;
+    public static Action<SecondaryActionArgs> OnSecondaryAction;
+    public static Action<UseActionArgs> OnUseAction;
+    public static Action<ReadyActionArgs> OnReadyAction;
+    public bool IsControllingAllowed;
 
     void Awake()
     {
         _mouseSensitivity = PlayerPrefs.GetFloat("MouseSensitivity");
+        IsControllingAllowed = true;
     }
 
     void Start()
@@ -30,9 +29,12 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         Debugging();
-        CameraRotation();
-        Movement();
-        MiscInputs();
+        if (IsControllingAllowed)
+        {
+            CameraRotation();
+            Movement();
+            MiscInputs();
+        }
     }
 
     void CameraRotation()
@@ -79,22 +81,18 @@ public class PlayerController : MonoBehaviour
     {
         var dir = playerCamera.transform.forward;
         character.AttackPrimary(dir.normalized);
-        OnPrimaryAction?.Invoke();
+        var args = new PrimaryActionArgs{
+            Source = character,
+        };
+        OnPrimaryAction?.Invoke(args);
     }
 
     void SecondaryAction()
     {
-        UIManager.Instance.ToggleInventory();
-        UIManager.Instance.AllowCursor(UIManager.Instance.IsInventoryOpen);
-        if (UIManager.Instance.IsInventoryOpen)
-        {
-            Time.timeScale = 0f;
-        }
-        else
-        {
-            Time.timeScale = 1f;
-        }
-        OnSecondaryAction?.Invoke();
+        var args = new SecondaryActionArgs{
+            Source = character,
+        };
+        OnSecondaryAction?.Invoke(args);
     }
 
     void UseAction()
@@ -109,46 +107,24 @@ public class PlayerController : MonoBehaviour
                 {
                     case "Item":
                         var itemC = hit.collider.gameObject.GetComponent<Item>();
-                        ItemPickup(itemC);
+                        character.PickupItem(itemC);
                         break;
                 }
             }
         }
-        OnUseAction?.Invoke();
-    }
-
-    void ItemPickup(Item item)
-    {
-        AudioManager.Instance.PlayPickupItemSound();
-        character.Backpack.TryAddItem(item);
-        if (UIManager.Instance.IsInventoryOpen)
-        {
-            UIManager.Instance.RefreshBackpackItemsUI(UIManager.Instance.GetPlayerBackpackUI(), character.Backpack);
-        }
-        item.SetActiveInWorld(false);
-        OnItemPickup?.Invoke(item);
+        var args = new UseActionArgs{
+            Source = character,
+        };
+        OnUseAction?.Invoke(args);
     }
 
     void ReadyAction()
     {
-        if (character.Equipment.WeaponItem == null)
-        {
-            if (PrefabContainer.Instance.TryGetPrefab("Fists", out var fistsPrefab))
-            {
-                var fists = Instantiate(fistsPrefab, character.transform.position, Quaternion.identity);
-                character.Equipment.TryEquipWeapon(fists.GetComponent<Weapon>());
-            }
-        }
-        if (character.Equipment.WeaponItem.IsReady == false)
-        {
-            character.PullOutWeapon();
-            UIManager.Instance.SetCombatReadyIndicatorColor(Color.red);
-            OnWeaponPullout?.Invoke();
-        } else {
-            character.PutAwayWeapon();
-            UIManager.Instance.SetCombatReadyIndicatorColor(Color.white);
-            OnWeaponPutaway?.Invoke();
-        }
+        character.ReadyWeapon();
+        var args = new ReadyActionArgs{
+            Source = character,
+        };
+        OnReadyAction?.Invoke(args);
     }
 
     void MiscInputs()

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,6 +9,8 @@ public class PlayerViewController : MonoBehaviour
     private Character player;
     private Vector3 _camera_position;
     private Quaternion _camera_rotation;
+    public static Action OnMoveAround;
+    public static Action OnReset;
 
     private float _sensitivity;
 
@@ -31,14 +34,13 @@ public class PlayerViewController : MonoBehaviour
         }
         _sensitivity = PlayerPrefs.GetFloat("MouseSensitivity", 1f);
         var mouse_x = Input.GetAxis("Mouse X");
-        UIManager.Instance.CursorVisible(false);
-        _camera.transform.RotateAround(player.transform.position, player.transform.up, mouse_x * Time.deltaTime * _sensitivity);    
+        _camera.transform.RotateAround(player.transform.position, player.transform.up, mouse_x * Time.deltaTime * _sensitivity);
+        OnMoveAround?.Invoke();    
     }
 
     public void Reset()
     {
-        UIManager.Instance.CursorVisible(true);
-        UIManager.Instance.ResetCursor();
         _camera.transform.SetLocalPositionAndRotation(_camera_position, _camera_rotation);
+        OnReset?.Invoke();
     }
 }

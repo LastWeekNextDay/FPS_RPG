@@ -3,12 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public struct DamageArgs 
-{
-    public float Damage;
-    public List<StatusEffect> StatusEffects;
-}
-
 public class Character : MonoBehaviour
 {
     [Header("Unity Components")]
@@ -53,11 +47,14 @@ public class Character : MonoBehaviour
     private bool _reachedJumpApex;
     private List<AppliedStatusEffect> _appliedStatusEffects;
 
-    public Action<DamageArgs> OnDamageTaken;
-    public Action OnJump;
-    public Action<StatusEffect> OnAddStatusEffect;
-    public Action<StatusEffect> OnRemoveStatusEffect;
-    public Action<AppliedStatusEffect> OnRemoveAppliedStatusEffect;
+    public static Action<DamageArgs> OnDamageTaken;
+    public static Action<JumpArgs> OnJump;
+    public static Action<StatusEffectArgs> OnAddStatusEffect;
+    public static Action<StatusEffectArgs> OnRemoveStatusEffect;
+    public static Action<AppliedStatusEffectArgs> OnRemoveAppliedStatusEffect;
+    public static Action<WeaponPulloutArgs> OnWeaponPullout;
+    public static Action<WeaponPutawayArgs> OnWeaponPutaway;
+    public static Action<PickupItemArgs> OnPickupItem;
 
     void Awake()
     {
@@ -109,12 +106,15 @@ public class Character : MonoBehaviour
     {
         if (IsGrounded && Energy > _jumpEnergy && _justJumped == false)
         {
-            AudioManager.Instance.PlayJumpSound(audioSource);
             rigidBody.velocity = new Vector3(rigidBody.velocity.x, 0f, rigidBody.velocity.z);
             rigidBody.AddForce(transform.up * JumpForce, ForceMode.Impulse);
             Energy -= _jumpEnergy;
             _justJumped = true;
-            OnJump?.Invoke();   
+            var args = new JumpArgs
+            {
+                Source = this
+            };
+            OnJump?.Invoke(args);   
         }
     }
 
@@ -155,7 +155,12 @@ public class Character : MonoBehaviour
             _appliedStatusEffects.Add(newStatusEffect);
         }
         RecalculateStats();
-        OnAddStatusEffect?.Invoke(statusEffect);
+        var args = new StatusEffectArgs
+        {
+            Target = this,
+            StatusEffect = statusEffect
+        };
+        OnAddStatusEffect?.Invoke(args);
     }
 
     public void RemoveStatusEffect(StatusEffect statusEffect)
@@ -176,7 +181,12 @@ public class Character : MonoBehaviour
             _appliedStatusEffects.RemoveAt(index);
         }
         RecalculateStats();
-        OnRemoveStatusEffect?.Invoke(statusEffect);
+        var args = new StatusEffectArgs
+        {
+            Target = this,
+            StatusEffect = statusEffect
+        };
+        OnRemoveStatusEffect?.Invoke(args);
     }
 
     public void RemoveStatusEffect(AppliedStatusEffect appliedStatusEffect)
@@ -197,7 +207,12 @@ public class Character : MonoBehaviour
             _appliedStatusEffects.RemoveAt(index);
         }
         RecalculateStats();
-        OnRemoveAppliedStatusEffect?.Invoke(appliedStatusEffect);
+        var args = new AppliedStatusEffectArgs
+        {
+            Target = this,
+            StatusEffect = appliedStatusEffect
+        };
+        OnRemoveAppliedStatusEffect?.Invoke(args);
     }
 
     void CalculateStatusEffectsTimings()
@@ -457,6 +472,7 @@ public class Character : MonoBehaviour
                 var damage = difference;
                 var args = new DamageArgs
                 {
+                    Target = this,
                     Damage = damage
                 };
                 TakeDamage(args);
@@ -473,7 +489,6 @@ public class Character : MonoBehaviour
     public void TakeDamage(DamageArgs args)
     {
         ApplyDamage(args.Damage, args.StatusEffects);
-        AudioManager.Instance.PlayHurtSound(audioSource);
         RecalculateStats(); 
         OnDamageTaken?.Invoke(args);
     }
@@ -531,20 +546,74 @@ public class Character : MonoBehaviour
         InCombatMode = b;
     }
 
+    public void ReadyWeapon()
+    {
+        if (Equipment.WeaponItem == null)
+        {
+            if (PrefabContainer.Instance.TryGetPrefab("Fists", out var fistsPrefab))
+            {
+                var fists = Instantiate(fistsPrefab, transform.position, Quaternion.identity);
+                Equipment.TryEquipWeapon(fists.GetComponent<Weapon>());
+            }
+        }
+        if (Equipment.WeaponItem.IsReady == false)
+        {
+            PullOutWeapon();
+        }
+        else
+        {
+            PutAwayWeapon();
+        }
+    }
+
     public void PullOutWeapon()
     {
+        if (Equipment.WeaponItem == null)
+        {
+            if (PrefabContainer.Instance.TryGetPrefab("Fists", out var fistsPrefab))
+            {
+                var fists = Instantiate(fistsPrefab, transform.position, Quaternion.identity);
+                Equipment.TryEquipWeapon(fists.GetComponent<Weapon>());
+            }
+        }
         StartCoroutine(nameof(PullOutWeaponCoroutine));
+        var args = new WeaponPulloutArgs
+        {
+            Source = this,
+            Weapon = Equipment.WeaponItem
+        };
+        OnWeaponPullout?.Invoke(args);
     }
 
     public void PutAwayWeapon()
     {
         StartCoroutine(nameof(PutAwayWeaponCoroutine));
+        var args = new WeaponPutawayArgs
+        {
+            Source = this,
+            Weapon = Equipment.WeaponItem
+        };
+        OnWeaponPutaway?.Invoke(args);
+    }
+
+    public void PickupItem(Item item)
+    {
+        if (Backpack.TryAddItem(item))
+        {
+            item.SetActiveInWorld(false);
+        }
+        var args = new PickupItemArgs
+        {
+            Source = this,
+            Item = item
+        };
+        OnPickupItem?.Invoke(args); 
     }
 
     public void AttackPrimary(Vector3 dir)
     {
         if (Equipment.WeaponItem == null) return;
-        var weapon = Equipment.WeaponItem.GetComponent<Weapon>();
+        var weapon = Equipment.WeaponItem;
         if (weapon.IsReady == false) return;
         if (weapon.IsAttacking) return;
         StartCoroutine(nameof(AttackPrimaryCoroutine), dir);
@@ -552,7 +621,7 @@ public class Character : MonoBehaviour
 
     IEnumerator AttackPrimaryCoroutine(Vector3 dir)
     {
-        var weapon = Equipment.WeaponItem.GetComponent<Weapon>();
+        var weapon = Equipment.WeaponItem;
         weapon.IsAttacking = true;
         var middle_of_character = transform.position + col.bounds.extents.y * transform.up;
         var ray = new Ray(middle_of_character, dir);
@@ -648,6 +717,8 @@ public class Character : MonoBehaviour
             {
                 character.TakeDamage(new DamageArgs
                 {
+                    Source = this,
+                    Target = character,
                     Damage = weapon.baseDamage,
                 });
             }
@@ -658,7 +729,7 @@ public class Character : MonoBehaviour
 
     IEnumerator PullOutWeaponCoroutine()
     {
-        var weapon = Equipment.WeaponItem.GetComponent<Weapon>();
+        var weapon = Equipment.WeaponItem;
         yield return new WaitForSeconds(weapon.basePullOutTime);
         weapon.IsReady = true;
         // TODO: Add animation
@@ -671,7 +742,7 @@ public class Character : MonoBehaviour
 
     IEnumerator PutAwayWeaponCoroutine()
     {
-        var weapon = Equipment.WeaponItem.GetComponent<Weapon>();
+        var weapon = Equipment.WeaponItem;
         yield return new WaitForSeconds(weapon.basePullOutTime);
         weapon.IsReady = false;
         // TODO: Add animation
