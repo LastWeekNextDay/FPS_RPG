@@ -24,7 +24,7 @@ public class InventoryItem : MonoBehaviour
     public static Action<UnequipArgs> OnUnequip;
 
     private GameObject _canvasObject;
-    private Character playerChar;
+    private Character playerChar; 
 
     void Start()
     {
@@ -53,21 +53,7 @@ public class InventoryItem : MonoBehaviour
     public void AttachItemAsInventoryItem(Item item)
     {
         RepresentedItem = item;
-        item.transform.SetParent(transform);
-        item.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
-        item.transform.localScale = Vector3.one;
-        var rb = item.GetComponent<Rigidbody>();
-        if (rb != null)
-        {
-            rb.useGravity = false;
-            rb.isKinematic = true;
-        }
-        var collider = item.GetComponent<Collider>();
-        if (collider != null)
-        {
-            collider.isTrigger = true;
-        }
-        item.gameObject.SetActive(false);
+        SetActiveInWorld(false, parent: transform);
 
         Sprite image = item.GetComponent<Item>().itemIcon ?? DefaultIcon;
         imageRenderer.sprite = image;
@@ -89,16 +75,31 @@ public class InventoryItem : MonoBehaviour
     {
         if (RepresentedItem != null)
         {
+            RepresentedItem.SetActiveInWorld(active, pos, parent);
             if (active)
             {
-                RepresentedItem.transform.position = pos;
+                if (RepresentedItem.TryGetComponent<Rigidbody>(out var rb))
+                {
+                    rb.useGravity = true;
+                    rb.isKinematic = false;
+                }
+                if (RepresentedItem.TryGetComponent<Collider>(out var collider))
+                {
+                    collider.isTrigger = false;
+                }
             }
             else
             {
-                RepresentedItem.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+                if (RepresentedItem.TryGetComponent<Rigidbody>(out var rb))
+                {
+                    rb.useGravity = false;
+                    rb.isKinematic = true;
+                }
+                if (RepresentedItem.TryGetComponent<Collider>(out var collider))
+                {
+                    collider.isTrigger = true;
+                }
             }
-            RepresentedItem.gameObject.SetActive(active);
-            RepresentedItem.transform.SetParent(parent);
         }   
     }
 
@@ -244,7 +245,6 @@ public class InventoryItem : MonoBehaviour
 
         var Player = GameObject.Find("Player");
         Drop(Player.GetComponent<Character>(), CalculateForwardPositionUsingCamera(Player.transform.position));
-        
     }
 
     public void Drop(Character fromWho, Vector3 where)
@@ -252,18 +252,6 @@ public class InventoryItem : MonoBehaviour
         if (slotAttachedTo != null)
         {
             slotAttachedTo.Unassign();
-        }
-
-        var rb = RepresentedItem.GetComponent<Rigidbody>();
-        if (rb != null)
-        {
-            rb.useGravity = true;
-            rb.isKinematic = false;
-        }
-        var collider = RepresentedItem.GetComponent<Collider>();
-        if (collider != null)
-        {
-            collider.isTrigger = false;
         }
 
         SetActiveInWorld(true, where);

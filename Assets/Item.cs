@@ -18,6 +18,7 @@ public class Item : MonoBehaviour
     public bool IsInteractable;
     public bool IsForcefullyEquipped;
     public Sprite itemIcon;
+    [NonSerialized] public Vector3 OriginalScale;
 
     void Start()
     {
@@ -29,6 +30,7 @@ public class Item : MonoBehaviour
             ItemType = ItemType.Miscellaneous;
             isEquipment = false;
         }
+        OriginalScale = transform.localScale;
     }
 
     public bool IsMovableFromSlot()
@@ -55,6 +57,7 @@ public class Item : MonoBehaviour
 
     public void SetActiveInWorld(bool active, Vector3 pos = default, Transform parent = null)
     {
+        gameObject.SetActive(active);
         if (active)
         {
             transform.position = pos;
@@ -63,7 +66,7 @@ public class Item : MonoBehaviour
         {
             transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
         }
-        gameObject.SetActive(active);
-        transform.SetParent(parent);   
+        transform.SetParent(parent);
+        transform.localScale = OriginalScale;  
     }
 }

@@ -56,6 +56,8 @@ public class Character : MonoBehaviour
     public static Action<WeaponPutawayArgs> OnWeaponPutaway;
     public static Action<PickupItemArgs> OnPickupItem;
 
+    [NonSerialized] public Vector3 OriginalScale;
+
     void Awake()
     {
         _appliedStatusEffects = new();
@@ -65,6 +67,7 @@ public class Character : MonoBehaviour
 
     void Start()
     {   
+        OriginalScale = transform.localScale;
         RecalculateStats();
         Health = MaxHealth;
         Mana = MaxMana;
@@ -600,7 +603,7 @@ public class Character : MonoBehaviour
     {
         if (Backpack.TryAddItem(item))
         {
-            item.SetActiveInWorld(false);
+            item.SetActiveInWorld(false, parent: transform);
         }
         var args = new PickupItemArgs
         {
