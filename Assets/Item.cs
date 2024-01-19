@@ -18,9 +18,14 @@ public class Item : MonoBehaviour
     public Sprite itemIcon;
     [NonSerialized] public Vector3 OriginalScale;
 
-    protected virtual void Start()
+    void Awake()
     {
         OriginalScale = transform.localScale;
+    }
+
+    protected virtual void Start()
+    {
+        
     }
 
     public bool isEquipment()
@@ -60,15 +65,15 @@ public class Item : MonoBehaviour
     public void SetActiveInWorld(bool active, Vector3 pos = default, Transform parent = null)
     {
         gameObject.SetActive(active);
+        transform.SetParent(parent);
+        transform.localScale = OriginalScale;
         if (active)
         {
-            transform.position = pos;
+            transform.localPosition = pos;
         }
         else
         {
             transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
         }
-        transform.SetParent(parent);
-        transform.localScale = OriginalScale;  
     }
 }

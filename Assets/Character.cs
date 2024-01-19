@@ -63,11 +63,11 @@ public class Character : MonoBehaviour
         _appliedStatusEffects = new();
         Backpack = new(this);
         Equipment = new(this);
+        OriginalScale = transform.localScale;
     }
 
     void Start()
     {   
-        OriginalScale = transform.localScale;
         RecalculateStats();
         Health = MaxHealth;
         Mana = MaxMana;
