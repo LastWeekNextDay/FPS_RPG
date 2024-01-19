@@ -248,9 +248,9 @@ public class ItemContainer : MonoBehaviour
             }
             if (hit.gameObject.layer == LayerMask.NameToLayer("ItemSlot"))
             {
-                isSelected = false;
                 var slot = hit.gameObject.GetComponent<InventorySlot>();
                 AssignToSlot(slot);
+                isSelected = false;
                 return;
             }
         }
