@@ -15,7 +15,6 @@ public enum WeaponBaseType
 
 public class Weapon : Item
 {
-    public string weaponName;
     public MainAttackType mainAttackType;
     public WeaponBaseType weaponBaseType;
     public float baseDamage;
@@ -29,4 +28,10 @@ public class Weapon : Item
     [NonSerialized] public Character Wielder;
     [NonSerialized] public bool IsReady;
     [NonSerialized] public bool IsAttacking;
+
+    protected override void Start()
+    {
+        base.Start();
+        ItemType = ItemType.Weapon;
+    }
 }

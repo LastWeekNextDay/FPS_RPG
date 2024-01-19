@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public enum ItemType
@@ -13,24 +11,28 @@ public enum ItemType
 
 public class Item : MonoBehaviour
 {
+    public string itemName;
     [NonSerialized] public ItemType ItemType;
-    [NonSerialized] public bool isEquipment;
     public bool IsInteractable;
     public bool IsForcefullyEquipped;
     public Sprite itemIcon;
     [NonSerialized] public Vector3 OriginalScale;
 
-    void Start()
+    protected virtual void Start()
     {
-        if (GetComponent<Weapon>() != null)
-        {
-            ItemType = ItemType.Weapon;
-            isEquipment = true;
-        } else {
-            ItemType = ItemType.Miscellaneous;
-            isEquipment = false;
-        }
         OriginalScale = transform.localScale;
+    }
+
+    public bool isEquipment()
+    {
+        switch (ItemType)
+        {
+            case ItemType.Weapon:
+            case ItemType.Armor:
+                return true;
+            default:
+                return false;
+        }
     }
 
     public bool IsMovableFromSlot()

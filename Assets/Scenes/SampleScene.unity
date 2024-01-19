@@ -5646,6 +5646,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerCamera: {fileID: 330585545}
   character: {fileID: 1108432365}
+  IsControllingAllowed: 0
 --- !u!23 &1108432369
 MeshRenderer:
   m_ObjectHideFlags: 0

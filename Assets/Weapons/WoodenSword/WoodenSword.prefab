@@ -119,10 +119,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a422a3548ea1c742ad148637829438a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  itemName: Wooden Sword
   IsInteractable: 1
   IsForcefullyEquipped: 0
   itemIcon: {fileID: 0}
-  weaponName: Wooden Sword
   mainAttackType: 0
   weaponBaseType: 1
   baseDamage: 1
