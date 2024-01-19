@@ -5,27 +5,33 @@ public class UnityEssential
     static public Transform FindChild(Transform parent, string name)
     {
         Transform child = null;
+
         foreach (Transform t in parent)
         {
             if (t.name == name)
             {
                 child = t;
                 break;
-            } else {
+            } 
+            else 
+            {
                 child = FindChild(t, name);
+
                 if (child != null)
                 {
                     break;
                 }
             }
         }
+        
         return child;
     }
 
     static public GameObject FindObject(string name, bool includeInactive = true)
     {
         FindObjectsInactive mode = includeInactive ? FindObjectsInactive.Include : FindObjectsInactive.Exclude;
-        GameObject[] objs = Object.FindObjectsByType<GameObject>(mode, FindObjectsSortMode.None);
+        GameObject[] objs = UnityEngine.Object.FindObjectsByType<GameObject>(mode, FindObjectsSortMode.None);
+
         foreach (GameObject obj in objs)
         {
             if (obj.name == name)
@@ -33,13 +39,15 @@ public class UnityEssential
                 return obj;
             }
         }
+
         return null;
     }
 
     static public GameObject FindObjectInChildren(GameObject parent, string name, bool includeInactive = true)
     {
         FindObjectsInactive mode = includeInactive ? FindObjectsInactive.Include : FindObjectsInactive.Exclude;
-        GameObject[] objs = Object.FindObjectsByType<GameObject>(mode, FindObjectsSortMode.None);
+        GameObject[] objs = UnityEngine.Object.FindObjectsByType<GameObject>(mode, FindObjectsSortMode.None);
+
         foreach (GameObject obj in objs)
         {
             if (obj.name == name && obj.transform.IsChildOf(parent.transform))
@@ -47,6 +55,7 @@ public class UnityEssential
                 return obj;
             }
         }
+        
         return null;
     }
 

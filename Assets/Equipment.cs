@@ -36,12 +36,12 @@ public class Equipment
     
     public bool TryEquipWeapon(Weapon weapon)
     {
-        if (WeaponItem == null || WeaponItem.IsToBeReplaced() ||
-        WeaponItem == weapon)
+        if (WeaponItem == null || WeaponItem.IsToBeReplaced() || WeaponItem == weapon)
         {
             WeaponItem = weapon;
             return true;
         }
+
         return false;
     }
 
@@ -52,6 +52,7 @@ public class Equipment
             WeaponItem = null;
             return true;
         }
+        
         return false;
     }
 

@@ -9,11 +9,9 @@ public class Container : MonoBehaviour
 
     void Start()
     {
-        if (items == null)
-        {
-            items = new List<Item>();
-        }
+        items ??= new List<Item>();
         Backpack = new Backpack(null, this);
+        
         for (int i = 0; i < items.Count; i++)
         {
             Backpack.TryAddItem(items[i]);

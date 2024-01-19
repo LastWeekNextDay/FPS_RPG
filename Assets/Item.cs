@@ -46,10 +46,12 @@ public class Item : MonoBehaviour
         {
             return false;
         }
+
         if (IsForcefullyEquipped == true)
         {
             return false;
         }
+
         return true;
     }
 
@@ -59,21 +61,24 @@ public class Item : MonoBehaviour
         {
             return true;
         }
+
         return false;
     }
 
     public void SetActiveInWorld(bool active, Vector3 pos = default, Transform parent = null)
     {
         gameObject.SetActive(active);
-        transform.SetParent(parent);
-        transform.localScale = OriginalScale;
+        
         if (active)
         {
-            transform.localPosition = pos;
+            transform.position = pos;
         }
         else
         {
             transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
         }
+
+        transform.SetParent(parent);
+        transform.localScale = OriginalScale;
     }
 }

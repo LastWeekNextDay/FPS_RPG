@@ -18,6 +18,8 @@ public class GameManager : MonoBehaviour
         }
         
         DontDestroyOnLoad(gameObject);
+
+        // TODO: Temporary
         PlayerPrefs.SetFloat("MouseSensitivity", 40f); 
     }
 }

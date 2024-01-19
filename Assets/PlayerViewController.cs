@@ -36,15 +36,17 @@ public class PlayerViewController : MonoBehaviour
 
     public void MoveAround()
     {
-        _sensitivity = PlayerPrefs.GetFloat("MouseSensitivity", 1f);
         var mouse_x = Input.GetAxis("Mouse X");
+        _sensitivity = PlayerPrefs.GetFloat("MouseSensitivity", 1f);
         _camera.transform.RotateAround(player.transform.position, player.transform.up, mouse_x * Time.deltaTime * _sensitivity);
+
         OnMoveAround?.Invoke();    
     }
 
     public void Reset()
     {
         _camera.transform.SetLocalPositionAndRotation(_camera_position, _camera_rotation);
+        
         OnReset?.Invoke();
     }
 }

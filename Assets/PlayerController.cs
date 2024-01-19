@@ -19,6 +19,7 @@ public class PlayerController : MonoBehaviour
     void Awake()
     {
         _mouseSensitivity = PlayerPrefs.GetFloat("MouseSensitivity");
+
         IsControllingAllowed = true;
     }
 
@@ -30,6 +31,7 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         Debugging();
+
         if (IsControllingAllowed)
         {
             CameraRotation();
@@ -81,7 +83,9 @@ public class PlayerController : MonoBehaviour
     void PrimaryAction()
     {
         var dir = playerCamera.transform.forward;
+
         character.AttackPrimary(dir.normalized);
+
         var args = new PrimaryActionArgs{
             Source = character,
         };
@@ -100,6 +104,7 @@ public class PlayerController : MonoBehaviour
     {
         var ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
         var distance = 2f;
+
         if (Physics.Raycast(ray, out var hit, distance))
         {
             if (hit.collider != null)
@@ -112,6 +117,7 @@ public class PlayerController : MonoBehaviour
                         break;
                     case "Character":
                         var charC = hit.collider.gameObject.GetComponent<Character>();
+
                         if (charC.IsDead())
                         {
                             var container1Args = new ContainerArgs{
@@ -130,6 +136,7 @@ public class PlayerController : MonoBehaviour
                 }
             }
         }
+
         var useActionsArgs = new UseActionArgs{
             Source = character,
         };
@@ -139,6 +146,7 @@ public class PlayerController : MonoBehaviour
     void ReadyAction()
     {
         character.ReadyWeapon();
+
         var args = new ReadyActionArgs{
             Source = character,
         };
@@ -151,14 +159,17 @@ public class PlayerController : MonoBehaviour
         {
             PrimaryAction();
         }
+
         if (Input.GetMouseButtonUp(1))
         {
             SecondaryAction();
         }
+
         if (Input.GetKeyUp(KeyCode.E))
         {
             UseAction();
         }
+
         if (Input.GetKeyUp(KeyCode.R))
         {
             ReadyAction();
@@ -169,16 +180,20 @@ public class PlayerController : MonoBehaviour
     {
         var charRay = new Ray(character.transform.position, character.transform.forward);
         var distance = character.SightRange;
+
         if (Physics.Raycast(charRay, out var hit, distance)){
             distance = hit.distance;
         }
+
         Debug.DrawRay(charRay.origin, charRay.direction * distance, Color.red);
         
         var lookRay = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
         distance = character.SightRange;
+
         if (Physics.Raycast(lookRay, out hit, distance)){
             distance = hit.distance;
         }
+        
         Debug.DrawRay(lookRay.origin, lookRay.direction * distance, Color.blue);
     }
 }

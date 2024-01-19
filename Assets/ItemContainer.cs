@@ -29,6 +29,7 @@ public class ItemContainer : MonoBehaviour
     void Start()
     {
         _canvasObject = GameObject.Find("Canvas");
+
         var Player = GameObject.Find("Player");
         playerChar = Player.GetComponent<Character>();
     }
@@ -36,6 +37,7 @@ public class ItemContainer : MonoBehaviour
     public bool IsEquipment()
     {
         var isEquipment = false;
+
         switch (slotType)
         {
             case SlotType.EquipmentWeaponPrimary:
@@ -47,12 +49,14 @@ public class ItemContainer : MonoBehaviour
                 isEquipment = true;
                 break;
         }
+
         return isEquipment;
     }
 
     public void AttachItemToItemContainer(Item item)
     {
         RepresentedItem = item;
+
         SetActiveInWorld(false, parent: transform);
 
         Sprite image = item.GetComponent<Item>().itemIcon ?? DefaultIcon;
@@ -76,6 +80,7 @@ public class ItemContainer : MonoBehaviour
         if (RepresentedItem != null)
         {
             RepresentedItem.SetActiveInWorld(active, pos, parent);
+
             if (active)
             {
                 if (RepresentedItem.TryGetComponent<Rigidbody>(out var rb))
@@ -83,6 +88,7 @@ public class ItemContainer : MonoBehaviour
                     rb.useGravity = true;
                     rb.isKinematic = false;
                 }
+
                 if (RepresentedItem.TryGetComponent<Collider>(out var collider))
                 {
                     collider.isTrigger = false;
@@ -95,6 +101,7 @@ public class ItemContainer : MonoBehaviour
                     rb.useGravity = false;
                     rb.isKinematic = true;
                 }
+
                 if (RepresentedItem.TryGetComponent<Collider>(out var collider))
                 {
                     collider.isTrigger = true;
@@ -134,7 +141,8 @@ public class ItemContainer : MonoBehaviour
                     {
                         ownerOfItem = owner.transform.gameObject;
                     }
-                } else if (container != null)
+                } 
+                else if (container != null)
                 {
                     if (container.Backpack.TryGetItemIndex(RepresentedItem, out _))
                     {
@@ -171,9 +179,11 @@ public class ItemContainer : MonoBehaviour
         {
             if (playerChar.Equipment.WeaponItem != null)
             {
-                if (RepresentedItem == playerChar.Equipment.WeaponItem){
-                    if (playerChar.Equipment.WeaponItem.GetComponent<Weapon>().IsAttacking ||
-                    playerChar.Equipment.WeaponItem.GetComponent<Weapon>().IsReady)
+                var weapon = playerChar.Equipment.WeaponItem;
+
+                if (RepresentedItem == weapon)
+                {
+                    if (weapon.IsAttacking || weapon.IsReady)
                     {
                         return;
                     }
@@ -193,6 +203,7 @@ public class ItemContainer : MonoBehaviour
 
         transform.SetParent(_canvasObject.transform);
         transform.SetSiblingIndex(transform.parent.childCount - 1);
+
         var args = new MouseAttachArgs
         {
             ItemContainer = this
@@ -206,19 +217,23 @@ public class ItemContainer : MonoBehaviour
         {
             return;
         }
+
         if (slotType == SlotType.EquipmentWeaponPrimary)
         {
             if (playerChar.Equipment.WeaponItem != null)
             {
-                if (RepresentedItem == playerChar.Equipment.WeaponItem){
-                    if (playerChar.Equipment.WeaponItem.GetComponent<Weapon>().IsAttacking ||
-                    playerChar.Equipment.WeaponItem.GetComponent<Weapon>().IsReady)
+                var weapon = playerChar.Equipment.WeaponItem;
+
+                if (RepresentedItem == weapon)
+                {
+                    if (weapon.IsAttacking || weapon.IsReady)
                     {
                         return;
                     }
                 }
             }
         }
+
         var mousePosition = Input.mousePosition;
         transform.position = mousePosition;
     }
@@ -229,13 +244,16 @@ public class ItemContainer : MonoBehaviour
         {
             return;
         }
+
         if (slotType == SlotType.EquipmentWeaponPrimary)
         {
             if (playerChar.Equipment.WeaponItem != null)
             {
-                if (RepresentedItem == playerChar.Equipment.WeaponItem){
-                    if (playerChar.Equipment.WeaponItem.GetComponent<Weapon>().IsAttacking ||
-                    playerChar.Equipment.WeaponItem.GetComponent<Weapon>().IsReady)
+                var weapon = playerChar.Equipment.WeaponItem;
+
+                if (RepresentedItem == weapon)
+                {
+                    if (weapon.IsAttacking || weapon.IsReady)
                     {
                         return;
                     }
@@ -262,10 +280,12 @@ public class ItemContainer : MonoBehaviour
             {
                 continue;
             }
+
             if (hit.gameObject.layer == LayerMask.NameToLayer("ItemSlot"))
             {
                 var slot = hit.gameObject.GetComponent<InventorySlot>();
                 AssignToSlot(slot);
+
                 isSelected = false;
                 return;
             }
@@ -298,10 +318,14 @@ public class ItemContainer : MonoBehaviour
         if (equippedBy == fromWho)
         {
             fromWho.Equipment.TryUnequip(RepresentedItem);
-        } else {
+        } 
+        else 
+        {
             slotAttachedTo?.Backpack?.TryRemoveItem(RepresentedItem); 
         }
+
         SetActiveInWorld(true, where);
+
         var args = new DropArgs
         {
             Source = fromWho,
@@ -309,6 +333,7 @@ public class ItemContainer : MonoBehaviour
             Position = where
         };
         OnDrop?.Invoke(args);
+
         DestroyItemContainter();
     }
 
@@ -317,13 +342,17 @@ public class ItemContainer : MonoBehaviour
         var mousePos = Input.mousePosition;
         var delta = Camera.main.transform.forward - Camera.main.transform.position;
         mousePos.z = delta.normalized.magnitude;
+
         var worldPosition = Camera.main.ScreenToWorldPoint(mousePos);
+
         if (Vector3.Distance(fromWhere, worldPosition) > distance)
         {
             delta = worldPosition - Camera.main.transform.position;
             delta.Normalize();
+
             worldPosition = Camera.main.transform.position + delta;
         }
+
         return worldPosition;
     }
 
@@ -341,6 +370,7 @@ public class ItemContainer : MonoBehaviour
         // Else, try to add back to backpack, and if there is no space, drop in front of you
         
         bool itemReadded = false;
+
         if (slotAttachedTo != null)
         {
             if (slotAttachedTo.IsEquipmentSlot())
@@ -348,17 +378,25 @@ public class ItemContainer : MonoBehaviour
                 if (playerChar.Backpack.TryAddItem(RepresentedItem) == false)
                 {
                     Drop(playerChar, CalculateForwardPositionUsingCamera(player.transform.position));
-                } else {
+                } 
+                else 
+                {
                     itemReadded = true;   
                 }
-            } else {
+            } 
+            else 
+            {
                 itemReadded = true;
             }
-        } else {
+        } 
+        else 
+        {
             if (playerChar.Backpack.TryAddItem(RepresentedItem) == false)
             {
                 Drop(playerChar, CalculateForwardPositionUsingCamera(player.transform.position));
-            } else {
+            } 
+            else 
+            {
                 itemReadded = true;
             }
         }
@@ -366,15 +404,16 @@ public class ItemContainer : MonoBehaviour
         var args = new CancelSelectionArgs
         {
             ItemContainer = this
-        };
-         
+        };   
 
         if (itemReadded)
         {
             slotAttachedTo.UnassignVisual();
             OnCancelSelection?.Invoke(args);
             DestroyItemContainter();
-        } else {
+        } 
+        else 
+        {
             OnCancelSelection?.Invoke(args);
         }
     }

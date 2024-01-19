@@ -18,6 +18,11 @@ public class ParticleManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
+    void Start()
+    {
+        Object.OnHit += (args) => PlayHit(args.MaterialType, args.HitPoint, Quaternion.LookRotation(args.Direction));
+    }
+
     public void PlayParticle(string particleName, Vector3 pos, Quaternion rot)
     {
         if (PrefabContainer.Instance.TryGetPrefab(particleName, out GameObject particle))

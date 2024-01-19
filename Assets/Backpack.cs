@@ -21,6 +21,7 @@ public class Backpack
                 return true;
             }
         }
+
         return false;
     }
 
@@ -34,6 +35,7 @@ public class Backpack
                 return true;
             }
         }
+        
         return false;
     }
 
@@ -54,7 +56,9 @@ public class Backpack
             Items[toPosition] = item;
             return true;
         }
+
         Item itemToSwap;
+
         for (int i = 0; i < Items.Length; i++)
         {
             if (Items[i] == item)
@@ -65,6 +69,7 @@ public class Backpack
                 return true;
             }
         }
+
         return false;
     }
 
@@ -78,6 +83,7 @@ public class Backpack
                 return true;
             }
         }
+
         return false;
     }
 
@@ -91,7 +97,9 @@ public class Backpack
                 return true;
             }
         }
+
         index = -1;
+        
         return false;
     }
 }

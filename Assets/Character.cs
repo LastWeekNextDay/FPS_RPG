@@ -63,12 +63,14 @@ public class Character : MonoBehaviour
         _appliedStatusEffects = new();
         Backpack = new(this);
         Equipment = new(this);
+
         OriginalScale = transform.localScale;
     }
 
     void Start()
     {   
         RecalculateStats();
+
         Health = MaxHealth;
         Mana = MaxMana;
         Energy = MaxEnergy;
@@ -78,6 +80,7 @@ public class Character : MonoBehaviour
     {
         Debugging();
         CalculateGrounded();
+
         if (IsDead() == false)
         {
             CalculateStatusEffectsTimings();
@@ -100,10 +103,12 @@ public class Character : MonoBehaviour
     {
         var ray = new Ray(transform.position, Vector3.down);
         var distance = 100000f;
+
         if (Physics.Raycast(ray, out var hit, distance))
         {
             distance = hit.distance;
         }
+
         Color color = IsGrounded ? Color.green : Color.red;
         Debug.DrawRay(ray.origin, ray.direction * distance, color);
     }
@@ -121,6 +126,7 @@ public class Character : MonoBehaviour
             rigidBody.AddForce(transform.up * JumpForce, ForceMode.Impulse);
             Energy -= _jumpEnergy;
             _justJumped = true;
+
             var args = new JumpArgs
             {
                 Source = this
@@ -133,6 +139,7 @@ public class Character : MonoBehaviour
     {
         bool contains = false;
         int index = -1;
+
         foreach (var appliedStatusEffect in _appliedStatusEffects)
         {
             if (appliedStatusEffect.StatusEffect == statusEffect)
@@ -142,6 +149,7 @@ public class Character : MonoBehaviour
                 break;
             }
         }
+
         if (contains)
         {
             if (statusEffect.IsStackable == false)
@@ -165,7 +173,9 @@ public class Character : MonoBehaviour
             };
             _appliedStatusEffects.Add(newStatusEffect);
         }
+
         RecalculateStats();
+
         var args = new StatusEffectArgs
         {
             Target = this,
@@ -178,6 +188,7 @@ public class Character : MonoBehaviour
     {
         bool contains = false;
         int index = -1;
+
         foreach (var appliedStatusEffect in _appliedStatusEffects)
         {
             if (appliedStatusEffect.StatusEffect == statusEffect)
@@ -187,11 +198,14 @@ public class Character : MonoBehaviour
                 break;
             }
         }
+
         if (contains)
         {
             _appliedStatusEffects.RemoveAt(index);
         }
+
         RecalculateStats();
+
         var args = new StatusEffectArgs
         {
             Target = this,
@@ -204,6 +218,7 @@ public class Character : MonoBehaviour
     {
         bool contains = false;
         int index = -1;
+
         foreach (var statusEffect in _appliedStatusEffects)
         {
             if (statusEffect == appliedStatusEffect)
@@ -213,11 +228,14 @@ public class Character : MonoBehaviour
                 break;
             }
         }
+
         if (contains)
         {
             _appliedStatusEffects.RemoveAt(index);
         }
+
         RecalculateStats();
+
         var args = new AppliedStatusEffectArgs
         {
             Target = this,
@@ -233,6 +251,7 @@ public class Character : MonoBehaviour
             foreach (var repeatedStatAffector in appliedStatusEffect.StatusEffect.RepeatedStatAffectors)
             {
                 appliedStatusEffect.StatusEffect.RepeatedStatAffectors[repeatedStatAffector.Key] -= Time.deltaTime;
+
                 if (appliedStatusEffect.StatusEffect.RepeatedStatAffectors[repeatedStatAffector.Key] <= 0f)
                 {
                     RecalculateStats();
@@ -240,7 +259,9 @@ public class Character : MonoBehaviour
             }
             
             if (appliedStatusEffect.TimeLeft == -1f) continue;
+
             appliedStatusEffect.TimeLeft -= Time.deltaTime;
+
             if (appliedStatusEffect.TimeLeft <= 0f)
             {
                 RemoveStatusEffect(appliedStatusEffect);
@@ -257,9 +278,11 @@ public class Character : MonoBehaviour
         if (Health > MaxHealth){
             Health = MaxHealth;
         }
+
         if (Mana > MaxMana){
             Mana = MaxMana;
         }
+
         if (Energy > MaxEnergy){
             Energy = MaxEnergy;
         }
@@ -366,44 +389,62 @@ public class Character : MonoBehaviour
         switch (stat.AffectedStat)
         {
             case AffectedStat.Strength:
-                if (stat.Multiplicative){
+                if (stat.Multiplicative)
+                {
                     Strength *= stat.Amount;
-                } else {
+                } 
+                else 
+                {
                     Strength += stat.Amount;
                 }
                 break;
             case AffectedStat.Agility:
-                if (stat.Multiplicative){
+                if (stat.Multiplicative)
+                {
                     Agility *= stat.Amount;
-                } else {
+                } 
+                else 
+                {
                     Agility += stat.Amount;
                 }
                 break;
             case AffectedStat.Endurance:
-                if (stat.Multiplicative){
+                if (stat.Multiplicative)
+                {
                     Endurance *= stat.Amount;
-                } else {
+                } 
+                else 
+                {
                     Endurance += stat.Amount;
                 }
                 break;
             case AffectedStat.Intelligence:
-                if (stat.Multiplicative){
+                if (stat.Multiplicative)
+                {
                     Intelligence *= stat.Amount;
-                } else {
+                } 
+                else 
+                {
                     Intelligence += stat.Amount;
                 }
                 break;
             case AffectedStat.Speed:
-                if (stat.Multiplicative){
+                if (stat.Multiplicative)
+                {
                     Speed *= stat.Amount;
-                } else {
+                } 
+                else 
+                {
                     Speed += stat.Amount;
                 }
                 break;
             case AffectedStat.JumpForce:
-                if (stat.Multiplicative){
+                if (stat.Multiplicative)
+                {
                     JumpForce *= stat.Amount;
-                } else {
+                } 
+                else 
+                {
                     JumpForce += stat.Amount;
                 }
                 break;
@@ -417,23 +458,32 @@ public class Character : MonoBehaviour
                 RestoreEnergy(stat.Amount, stat.Multiplicative);
                 break;
             case AffectedStat.HealthRegen:
-                if (stat.Multiplicative){
+                if (stat.Multiplicative)
+                {
                     HealthRegen *= stat.Amount;
-                } else {
+                } 
+                else 
+                {
                     HealthRegen += stat.Amount;
                 }
                 break;
             case AffectedStat.ManaRegen:
-                if (stat.Multiplicative){
+                if (stat.Multiplicative)
+                {
                     ManaRegen *= stat.Amount;
-                } else {
+                } 
+                else 
+                {
                     ManaRegen += stat.Amount;
                 }
                 break;
             case AffectedStat.EnergyRegen:
-                if (stat.Multiplicative){
+                if (stat.Multiplicative)
+                {
                     EnergyRegen *= stat.Amount;
-                } else {
+                } 
+                else 
+                {
                     EnergyRegen += stat.Amount;
                 }
                 break;
@@ -449,6 +499,7 @@ public class Character : MonoBehaviour
                 AddStatusEffect(statusEffect);
             }
         }
+
         Health -= damage;
     }
 
@@ -457,7 +508,7 @@ public class Character : MonoBehaviour
         var ray = new Ray(transform.position, Vector3.down);
 
         if (IsGrounded == false)
-            {
+        {
             Physics.Raycast(ray, out var hit, 100000f);
             var currentDistanceToGround = hit.distance;
             if (_previousDistanceToGround == 0){
@@ -469,26 +520,36 @@ public class Character : MonoBehaviour
             {
                 _reachedJumpApex = true;
             }
+            
             var differenceBetweenDistances = Mathf.Abs(_previousDistanceToGround - currentDistanceToGround);
-            _previousDistanceToGround = currentDistanceToGround;
+            
             if (_reachedJumpApex)
             {
                 _distanceFallen += Mathf.Abs(differenceBetweenDistances); 
-            }     
-        } else {
+            }
+
+            _previousDistanceToGround = currentDistanceToGround;     
+        } 
+        else 
+        {
             var damageDistanceLimit = 3f + (Agility * 0.1f);
+
             if (_distanceFallen > damageDistanceLimit)
             {
                 var difference = _distanceFallen - damageDistanceLimit;
                 var damage = difference;
+
                 var args = new DamageArgs
                 {
                     Target = this,
                     Damage = damage
                 };
+
                 TakeDamage(args);
             }
+
             _distanceFallen = 0f;
+
             if (_reachedJumpApex)
             {
                 _reachedJumpApex = false;
@@ -500,7 +561,9 @@ public class Character : MonoBehaviour
     public void TakeDamage(DamageArgs args)
     {
         ApplyDamage(args.Damage, args.StatusEffects);
-        RecalculateStats(); 
+
+        RecalculateStats();
+
         OnDamageTaken?.Invoke(args);
     }
 
@@ -514,6 +577,7 @@ public class Character : MonoBehaviour
         {
             Health += amount;
         }
+
         if (Health > MaxHealth)
         {
             Health = MaxHealth;
@@ -530,6 +594,7 @@ public class Character : MonoBehaviour
         {
             Mana += amount;
         }
+
         if (Mana > MaxMana)
         {
             Mana = MaxMana;
@@ -546,6 +611,7 @@ public class Character : MonoBehaviour
         {
             Energy += amount;
         }
+
         if (Energy > MaxEnergy)
         {
             Energy = MaxEnergy;
@@ -567,6 +633,7 @@ public class Character : MonoBehaviour
                 Equipment.TryEquipWeapon(fists.GetComponent<Weapon>());
             }
         }
+
         if (Equipment.WeaponItem.IsReady == false)
         {
             PullOutWeapon();
@@ -587,7 +654,9 @@ public class Character : MonoBehaviour
                 Equipment.TryEquipWeapon(fists.GetComponent<Weapon>());
             }
         }
+
         StartCoroutine(nameof(PullOutWeaponCoroutine));
+
         var args = new WeaponPulloutArgs
         {
             Source = this,
@@ -599,6 +668,7 @@ public class Character : MonoBehaviour
     public void PutAwayWeapon()
     {
         StartCoroutine(nameof(PutAwayWeaponCoroutine));
+
         var args = new WeaponPutawayArgs
         {
             Source = this,
@@ -613,6 +683,7 @@ public class Character : MonoBehaviour
         {
             item.SetActiveInWorld(false, parent: transform);
         }
+
         var args = new PickupItemArgs
         {
             Source = this,
@@ -624,9 +695,10 @@ public class Character : MonoBehaviour
     public void AttackPrimary(Vector3 dir)
     {
         if (Equipment.WeaponItem == null) return;
+
         var weapon = Equipment.WeaponItem;
-        if (weapon.IsReady == false) return;
-        if (weapon.IsAttacking) return;
+        if (weapon.IsReady == false || weapon.IsAttacking) return;
+
         StartCoroutine(nameof(AttackPrimaryCoroutine), dir);
     }
 
@@ -634,12 +706,15 @@ public class Character : MonoBehaviour
     {
         var weapon = Equipment.WeaponItem;
         weapon.IsAttacking = true;
+
         var middle_of_character = transform.position + col.bounds.extents.y * transform.up;
         var ray = new Ray(middle_of_character, dir);
         var distance = weapon.baseRange;
+
         var hits = Physics.RaycastAll(ray, distance);
         List<RaycastHit> objectsHit = new();
         List<RaycastHit> charactersHit = new();
+
         foreach (var hit in hits)
         {
             if (hit.collider != null)
@@ -655,8 +730,10 @@ public class Character : MonoBehaviour
                 }
             }
         }
+
         GameObject closestObjectHit = null;
         GameObject closestCharacterHit = null;
+
         foreach (var objHit in objectsHit)
         {
             if (closestObjectHit == null)
@@ -667,12 +744,14 @@ public class Character : MonoBehaviour
             {
                 var distanceToObjectHit = Vector3.Distance(middle_of_character, objHit.collider.gameObject.transform.position);
                 var distanceToClosestObjectHit = Vector3.Distance(middle_of_character, closestObjectHit.transform.position);
+
                 if (distanceToObjectHit < distanceToClosestObjectHit)
                 {
                     closestObjectHit = objHit.collider.gameObject;
                 }
             }
         }
+
         foreach (var characterHit in charactersHit)
         {
             if (closestCharacterHit == null)
@@ -683,24 +762,34 @@ public class Character : MonoBehaviour
             {
                 var distanceToCharacterHit = Vector3.Distance(middle_of_character, characterHit.collider.gameObject.transform.position);
                 var distanceToClosestCharacterHit = Vector3.Distance(middle_of_character, closestCharacterHit.transform.position);
+
                 if (distanceToCharacterHit < distanceToClosestCharacterHit)
                 {
                     closestCharacterHit = characterHit.collider.gameObject;
                 }
             }
         }
+
         GameObject objectHit = null;
-        if (closestCharacterHit == null){
-            if (closestObjectHit != null){
+
+        if (closestCharacterHit == null)
+        {
+            if (closestObjectHit != null)
+            {
                 objectHit = closestObjectHit;
             }
-        } else if (closestObjectHit == null){
+        } 
+        else if (closestObjectHit == null)
+        {
             if (closestCharacterHit != null){
                 objectHit = closestCharacterHit;
             }
-        } else {
+        } 
+        else 
+        {
             var distanceToObjectHit = Vector3.Distance(middle_of_character, closestObjectHit.transform.position);
             var distanceToCharacterHit = Vector3.Distance(middle_of_character, closestCharacterHit.transform.position);
+
             if (distanceToObjectHit < distanceToCharacterHit)
             {
                 objectHit = closestObjectHit;
@@ -710,7 +799,9 @@ public class Character : MonoBehaviour
                 objectHit = closestCharacterHit;
             }
         }
+
         RaycastHit finalhit = new();
+
         foreach (var hit in hits)
         {
             if (hit.collider.gameObject == objectHit)
@@ -719,12 +810,14 @@ public class Character : MonoBehaviour
                 break;
             }
         }
+
         if (objectHit != null)
         {
             if (objectHit.TryGetComponent(out Object obj))
             {
                 obj.GetHit(dir, finalhit.point);
-            } else if (objectHit.TryGetComponent(out Character character))
+            } 
+            else if (objectHit.TryGetComponent(out Character character))
             {
                 character.TakeDamage(new DamageArgs
                 {
@@ -734,6 +827,7 @@ public class Character : MonoBehaviour
                 });
             }
         }
+
         yield return new WaitForSeconds(weapon.baseAttackTime);
         weapon.IsAttacking = false;
     }
@@ -743,11 +837,13 @@ public class Character : MonoBehaviour
         var weapon = Equipment.WeaponItem;
         yield return new WaitForSeconds(weapon.basePullOutTime);
         weapon.IsReady = true;
+
         // TODO: Add animation
         // TODO: This is a temporary solution
         var thisy = transform.position.y + col.bounds.extents.y / 2;
         var pos = new Vector3(transform.position.x, thisy, transform.position.z);
         var infront = pos + transform.forward;
+
         Equipment.WeaponItem.SetActiveInWorld(true, infront, transform);
     }
 
@@ -756,6 +852,7 @@ public class Character : MonoBehaviour
         var weapon = Equipment.WeaponItem;
         yield return new WaitForSeconds(weapon.basePullOutTime);
         weapon.IsReady = false;
+        
         // TODO: Add animation
         // TODO: This is a temporary solution
         Equipment.WeaponItem.SetActiveInWorld(false);

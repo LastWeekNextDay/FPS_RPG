@@ -108,3 +108,10 @@ public struct ItemContainerSlotAttachmentArgs
     public InventorySlot Slot;
     public ItemContainer ItemContainer;
 }
+
+public struct ObjectHitArgs
+{
+    public MaterialType MaterialType;
+    public UnityEngine.Vector3 Direction;
+    public UnityEngine.Vector3 HitPoint;
+}

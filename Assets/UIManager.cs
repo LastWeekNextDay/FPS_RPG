@@ -40,7 +40,9 @@ public class UIManager : MonoBehaviour
             if (UnityEssential.TryFindObject("Inventory", out _inventoryPanel))
             {
                 return _inventoryPanel.activeSelf;
-            } else {
+            } 
+            else 
+            {
                 return false;
             }
         } 
@@ -51,7 +53,9 @@ public class UIManager : MonoBehaviour
             if (UnityEssential.TryFindObject("ContainerInventory", out _container))
             {
                 return _container.activeSelf;
-            } else {
+            } 
+            else 
+            {
                 return false;
             }
         }
@@ -79,10 +83,14 @@ public class UIManager : MonoBehaviour
             if (player == null)
             {
                 return;
-            } else {
+            } 
+            else 
+            {
                 _player = player.GetComponent<Character>();
             }
-        } else {
+        } 
+        else 
+        {
             UpdateInventoryStats();
             UpdateHealthBar();
             UpdateManaBar();
@@ -112,10 +120,8 @@ public class UIManager : MonoBehaviour
             {
                 return;
             }
-            if (IsInventoryOpen)
-            {
-                RefreshBackpackItemsUI(GetPlayerInventoryBackpackUI(), args.Source.Backpack);
-            }   
+
+            RefreshItemHoldingUIs();   
         };
 
         Character.OnWeaponPullout += (args) => {
@@ -123,6 +129,7 @@ public class UIManager : MonoBehaviour
             {
                 return;
             }
+
             SetCombatReadyIndicatorColor(Color.red);
         };
 
@@ -131,6 +138,7 @@ public class UIManager : MonoBehaviour
             {
                 return;
             }
+
             SetCombatReadyIndicatorColor(Color.white);
         };
 
@@ -141,6 +149,7 @@ public class UIManager : MonoBehaviour
                 AllowCursor(false);
                 return;
             }
+
             ToggleInventory();
             AllowCursor(IsInventoryOpen);
         };
@@ -158,6 +167,7 @@ public class UIManager : MonoBehaviour
             RefreshBackpackItemsUI(GetPlayerInventoryBackpackUI(), _player.Backpack);
             RefreshEquipmentItemsUI(GetPlayerInventoryEquipmentUI(), _player.Equipment);
         }
+
         if (IsContainerOpen)
         {
             RefreshBackpackItemsUI(GetContainerRightSideBackpackUI(), _player.Backpack);
@@ -167,10 +177,13 @@ public class UIManager : MonoBehaviour
 
     public void AllowCursor(bool b)
     {
-        if (b) {
+        if (b) 
+        {
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
-        } else {
+        } 
+        else 
+        {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }
@@ -197,7 +210,9 @@ public class UIManager : MonoBehaviour
                 {
                     _invStrengthNumber = strengthNumber.GetComponent<TMPro.TextMeshProUGUI>();
                 }
-            } else {
+            } 
+            else 
+            {
                 _invStrengthNumber.text = _player.Strength.ToString();
             }
 
@@ -207,7 +222,9 @@ public class UIManager : MonoBehaviour
                 {
                     _invAgilityNumber = agilityNumber.GetComponent<TMPro.TextMeshProUGUI>();
                 }
-            } else {
+            } 
+            else 
+            {
                 _invAgilityNumber.text = _player.Agility.ToString();
             }
 
@@ -217,7 +234,9 @@ public class UIManager : MonoBehaviour
                 {
                     _invEnduranceNumber = enduranceNumber.GetComponent<TMPro.TextMeshProUGUI>();
                 }
-            } else {
+            } 
+            else 
+            {
                 _invEnduranceNumber.text = _player.Endurance.ToString();
             }
 
@@ -227,7 +246,9 @@ public class UIManager : MonoBehaviour
                 {
                     _invIntelligenceNumber = intelligenceNumber.GetComponent<TMPro.TextMeshProUGUI>();
                 }
-            } else {
+            } 
+            else 
+            {
                 _invIntelligenceNumber.text = _player.Intelligence.ToString();
             }
 
@@ -237,7 +258,9 @@ public class UIManager : MonoBehaviour
                 {
                     _invHealthNumber = healthNumber.GetComponent<TMPro.TextMeshProUGUI>();
                 }
-            } else {
+            } 
+            else 
+            {
                 _invHealthNumber.text = _player.Health.ToString();
             }
 
@@ -247,7 +270,9 @@ public class UIManager : MonoBehaviour
                 {
                     _invManaNumber = manaNumber.GetComponent<TMPro.TextMeshProUGUI>();
                 }
-            } else {
+            } 
+            else 
+            {
                 _invManaNumber.text = _player.Mana.ToString();
             }
 
@@ -257,7 +282,9 @@ public class UIManager : MonoBehaviour
                 {
                     _invEnergyNumber = energyNumber.GetComponent<TMPro.TextMeshProUGUI>();
                 }
-            } else {
+            } 
+            else 
+            {
                 _invEnergyNumber.text = _player.Energy.ToString();
             }
 
@@ -267,7 +294,9 @@ public class UIManager : MonoBehaviour
                 {
                     _invMaxHealthNumber = maxHealthNumber.GetComponent<TMPro.TextMeshProUGUI>();
                 }
-            } else {
+            } 
+            else 
+            {
                 _invMaxHealthNumber.text = _player.MaxHealth.ToString();
             }
 
@@ -277,7 +306,9 @@ public class UIManager : MonoBehaviour
                 {
                     _invMaxManaNumber = maxManaNumber.GetComponent<TMPro.TextMeshProUGUI>();
                 }
-            } else {
+            } 
+            else 
+            {
                 _invMaxManaNumber.text = _player.MaxMana.ToString();
             }
 
@@ -287,7 +318,9 @@ public class UIManager : MonoBehaviour
                 {
                     _invMaxEnergyNumber = maxEnergyNumber.GetComponent<TMPro.TextMeshProUGUI>();
                 }
-            } else {
+            } 
+            else 
+            {
                 _invMaxEnergyNumber.text = _player.MaxEnergy.ToString();
             }
 
@@ -297,7 +330,9 @@ public class UIManager : MonoBehaviour
                 {
                     _invSpeedNumber = speedNumber.GetComponent<TMPro.TextMeshProUGUI>();
                 }
-            } else {
+            } 
+            else 
+            {
                 _invSpeedNumber.text = _player.Speed.ToString();
             }
 
@@ -307,7 +342,9 @@ public class UIManager : MonoBehaviour
                 {
                     _invJumpForceNumber = jumpForceNumber.GetComponent<TMPro.TextMeshProUGUI>();
                 }
-            } else {
+            } 
+            else 
+            {
                 _invJumpForceNumber.text = _player.JumpForce.ToString();
             }
 
@@ -317,7 +354,9 @@ public class UIManager : MonoBehaviour
                 {
                     _invHealthRegenNumber = healthRegenNumber.GetComponent<TMPro.TextMeshProUGUI>();
                 }
-            } else {
+            } 
+            else 
+            {
                 _invHealthRegenNumber.text = _player.HealthRegen.ToString();
             }
 
@@ -327,7 +366,9 @@ public class UIManager : MonoBehaviour
                 {
                     _invManaRegenNumber = manaRegenNumber.GetComponent<TMPro.TextMeshProUGUI>();
                 }
-            } else {
+            } 
+            else 
+            {
                 _invManaRegenNumber.text = _player.ManaRegen.ToString();
             }
 
@@ -337,7 +378,9 @@ public class UIManager : MonoBehaviour
                 {
                     _invEnergyRegenNumber = energyRegenNumber.GetComponent<TMPro.TextMeshProUGUI>();
                 }
-            } else {
+            } 
+            else 
+            {
                 _invEnergyRegenNumber.text = _player.EnergyRegen.ToString();
             }
         }
@@ -351,9 +394,12 @@ public class UIManager : MonoBehaviour
             {
                 _healthBar = healthBar.GetComponentInChildren<UnityEngine.UI.Slider>();
             }
-        } else {
+        } 
+        else 
+        {
             _healthBar.value = _player.Health / _player.MaxHealth;
         }
+
         if (IsInventoryOpen)
         {
             if (_invHealthBar == null)
@@ -362,7 +408,9 @@ public class UIManager : MonoBehaviour
                 {
                     _invHealthBar = invHealthBar.GetComponentInChildren<UnityEngine.UI.Slider>();
                 }
-            } else {
+            } 
+            else 
+            {
                 _invHealthBar.value = _player.Health / _player.MaxHealth;
             }
         }
@@ -376,9 +424,12 @@ public class UIManager : MonoBehaviour
             {
                _manaBar = manaBar.GetComponentInChildren<UnityEngine.UI.Slider>();
             }
-        } else {
+        } 
+        else 
+        {
             _manaBar.value = _player.Mana / _player.MaxMana;
         }
+
         if (IsInventoryOpen)
         {
             if (_invManaBar == null)
@@ -387,7 +438,9 @@ public class UIManager : MonoBehaviour
                 {
                     _invManaBar = invManaBar.GetComponentInChildren<UnityEngine.UI.Slider>();
                 }
-            } else {
+            } 
+            else 
+            {
                 _invManaBar.value = _player.Mana / _player.MaxMana;
             }
         }
@@ -401,9 +454,12 @@ public class UIManager : MonoBehaviour
             {
                 _energyBar = EnergyBar.GetComponentInChildren<UnityEngine.UI.Slider>();
             }
-        } else {
+        } 
+        else 
+        {
             _energyBar.value = _player.Energy / _player.MaxEnergy;
         }
+
         if (IsInventoryOpen)
         {
             if (_invEnergyBar == null)
@@ -412,7 +468,9 @@ public class UIManager : MonoBehaviour
                 {
                     _invEnergyBar = invEnergyBar.GetComponentInChildren<UnityEngine.UI.Slider>();
                 }
-            } else {
+            } 
+            else 
+            {
                 _invEnergyBar.value = _player.Energy / _player.MaxEnergy;
             }
         }
@@ -426,7 +484,9 @@ public class UIManager : MonoBehaviour
             {
                 InventoryActivate(!_inventoryPanel.activeSelf);
             }
-        } else {
+        } 
+        else 
+        {
             InventoryActivate(!_inventoryPanel.activeSelf);
         }
     }
@@ -439,7 +499,9 @@ public class UIManager : MonoBehaviour
             {
                 ContainerActive(!_container.activeSelf, container);
             }
-        } else {
+        } 
+        else 
+        {
             ContainerActive(!_container.activeSelf, container);
         }
     }
@@ -450,12 +512,16 @@ public class UIManager : MonoBehaviour
         {
             _container.SetActive(t);
             _openedContainer = container;
+
             InitializeBackpackItemsUI(GetContainerRightSideBackpackUI(), _player.Backpack);
             InitializeBackpackItemsUI(GetContainerLeftSideBackpackUI(), _openedContainer);
-        } else {
-            _openedContainer = null;
+        } 
+        else 
+        {
             DetachAllItemsFromBackpackSlots(GetContainerRightSideBackpackUI());
             DetachAllItemsFromBackpackSlots(GetContainerLeftSideBackpackUI());
+
+            _openedContainer = null;
             _container.SetActive(t);
         }
     }
@@ -465,11 +531,15 @@ public class UIManager : MonoBehaviour
         if (t)
         {
             _inventoryPanel.SetActive(t);
+
             InitializeBackpackItemsUI(GetPlayerInventoryBackpackUI(), _player.Backpack);
             InitializeEquipmentItemsUI(GetPlayerInventoryEquipmentUI(), _player.Equipment);
-        } else {
+        } 
+        else 
+        {
             DetachAllItemsFromBackpackSlots(GetPlayerInventoryBackpackUI());
             DetachAllItemsFromEquipmentSlots(GetPlayerInventoryEquipmentUI());
+
             _inventoryPanel.SetActive(t);
         }
     }
@@ -480,6 +550,7 @@ public class UIManager : MonoBehaviour
         {
             return backpack;
         }
+
         return null;
     }
 
@@ -489,6 +560,7 @@ public class UIManager : MonoBehaviour
         {
             return backpack;
         }
+
         return null;
     }
 
@@ -498,6 +570,7 @@ public class UIManager : MonoBehaviour
         {
             return equipment;
         }
+
         return null;
     }
 
@@ -507,12 +580,14 @@ public class UIManager : MonoBehaviour
         {
             return combatReadyIndicator;
         }
+
         return null;
     }
 
     public void SetCombatReadyIndicatorColor(Color color)
     {
         var indicator = GetCombatReadyIndicator();
+
         if (indicator != null)
         {
             indicator.GetComponent<UnityEngine.UI.Image>().color = color;
@@ -525,6 +600,7 @@ public class UIManager : MonoBehaviour
         {
             return null;
         }
+
         foreach (Transform child in equipmentUI.transform)
         {
             if (child.gameObject.name == "Weapon1Holder")
@@ -532,6 +608,7 @@ public class UIManager : MonoBehaviour
                 return child.gameObject.GetComponent<InventorySlot>();
             }
         }
+
         return null;
     }
 
@@ -546,12 +623,15 @@ public class UIManager : MonoBehaviour
                     return backpack;
                 }
             }
-        } else {
+        } 
+        else 
+        {
             if (UnityEssential.TryFindObjectInChildren(_inventoryPanel, "BackpackBase", out GameObject backpack))
             {
                 return backpack;
             }
         }
+
         return null;
     }
 
@@ -561,11 +641,14 @@ public class UIManager : MonoBehaviour
         {
             return null;
         }
+
         var rows = new List<GameObject>();
+
         foreach (Transform child in backpackUI.transform)
         {
             rows.Add(child.gameObject);
         }
+
         foreach (var row in rows)
         {
             foreach (Transform child in row.transform)
@@ -577,6 +660,7 @@ public class UIManager : MonoBehaviour
                 }
             }
         }
+
         return null;
     }
 
@@ -586,11 +670,13 @@ public class UIManager : MonoBehaviour
         {
             return;
         }
+
         foreach (Transform child in equipmentUI.transform)
         {
             var slot = child.gameObject.GetComponent<InventorySlot>();
             slot.Equipment = equipment;
             slot.Backpack = equipment.Owner.Backpack;
+
             switch (slot.slotType)
             {
                 case SlotType.EquipmentWeaponPrimary:
@@ -611,12 +697,16 @@ public class UIManager : MonoBehaviour
         {
             return;
         }
+
         var rows = new List<GameObject>();
-        int UIIndex = 0;
+
         foreach (Transform child in backpackUI.transform)
         {
             rows.Add(child.gameObject);
         }
+
+        int UIIndex = 0;
+
         foreach (var row in rows)
         {
             foreach (Transform child in row.transform)
@@ -624,10 +714,12 @@ public class UIManager : MonoBehaviour
                 var slot = child.gameObject.GetComponent<InventorySlot>();
                 slot.Backpack = backpack;
                 slot.backpackSlotIndex = UIIndex;
+
                 if (backpack.Items[UIIndex] != null)
                 {
                     TryToAddToSlotUI(slot, MakeItemIntoItemContainerUI(backpack.Items[UIIndex]));
                 }
+
                 UIIndex++;
             }
         }
@@ -639,17 +731,22 @@ public class UIManager : MonoBehaviour
         {
             return;
         }
+
         var rows = new List<GameObject>();
-        int UIIndex = 0;
+
         foreach (Transform child in backpackUI.transform)
         {
             rows.Add(child.gameObject);
         }
+
+        int UIIndex = 0;
+
         foreach (var row in rows)
         {
             foreach (Transform child in row.transform)
             {
                 var slot = child.gameObject.GetComponent<InventorySlot>();
+
                 if (backpack.Items[UIIndex] != null)
                 {
                     if (slot.attachedItemContainer == null)
@@ -664,6 +761,7 @@ public class UIManager : MonoBehaviour
                         TryToRemoveFromSlotUI(slot);
                     }
                 }
+
                 UIIndex++;
             }
         }
@@ -675,9 +773,11 @@ public class UIManager : MonoBehaviour
         {
             return;
         }
+
         foreach (Transform child in equipmentUI.transform)
         {
             var slot = child.gameObject.GetComponent<InventorySlot>();
+
             switch (slot.slotType)
             {
                 case SlotType.EquipmentWeaponPrimary:
@@ -706,11 +806,14 @@ public class UIManager : MonoBehaviour
         {
             return;
         }
+
         var rows = new List<GameObject>();
+
         foreach (Transform child in backpackUI.transform)
         {
             rows.Add(child.gameObject);
         }
+
         foreach (var row in rows)
         {
             foreach (Transform child in row.transform)
@@ -727,6 +830,7 @@ public class UIManager : MonoBehaviour
         {
             return;
         }
+
         foreach (Transform child in equipmentUI.transform)
         {
             var slot = child.gameObject.GetComponent<InventorySlot>();
@@ -740,12 +844,16 @@ public class UIManager : MonoBehaviour
         {
             return null;
         }
-        int i = 0;
+        
         var rows = new List<GameObject>();
+
         foreach (Transform child in backpackUI.transform)
         {
             rows.Add(child.gameObject);
         }
+
+        int i = 0;
+
         foreach (var row in rows)
         {
             foreach (Transform child in row.transform)
@@ -754,9 +862,11 @@ public class UIManager : MonoBehaviour
                 {
                     return child.gameObject.GetComponent<InventorySlot>();
                 }
+
                 i++;
             }
         }
+
         return null;
     }
 
@@ -766,12 +876,16 @@ public class UIManager : MonoBehaviour
         {
             return -1;
         }
-        int i = 0;
+        
         var rows = new List<GameObject>();
+
         foreach (Transform child in backpackUI.transform)
         {
             rows.Add(child.gameObject);
         }
+
+        int i = 0;
+
         foreach (var row in rows)
         {
             foreach (Transform child in row.transform)
@@ -780,9 +894,11 @@ public class UIManager : MonoBehaviour
                 {
                     return i;
                 }
+
                 i++;
             }
         }
+
         return -1;
     }
 
@@ -792,11 +908,13 @@ public class UIManager : MonoBehaviour
         {
             return false;
         }
+
         if (slot.attachedItemContainer == null)
         {
             slot.AssignVisual(item);
             return true;
         }
+
         return false;
     }
 
@@ -806,12 +924,14 @@ public class UIManager : MonoBehaviour
         {
             return false;
         }
+
         if (slot.attachedItemContainer != null)
         {
             var itemContainer = slot.attachedItemContainer;
             itemContainer.DestroyItemContainter();
             return true;
         }
+
         return false;
     }
 
@@ -821,6 +941,7 @@ public class UIManager : MonoBehaviour
         {
             return null;
         }
+        
         var itemContainer = Instantiate(itemContainerPrefab, Vector3.zero, Quaternion.identity).GetComponent<ItemContainer>();
         itemContainer.AttachItemToItemContainer(item);
         return itemContainer;

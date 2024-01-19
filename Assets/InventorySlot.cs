@@ -26,6 +26,7 @@ public class InventorySlot : MonoBehaviour
         item.transform.SetParent(transform);
         item.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
         item.transform.localScale = Vector3.one;
+
         attachedItemContainer = item;
         attachedItemContainer.slotAttachedTo = this;
     }
@@ -62,32 +63,43 @@ public class InventorySlot : MonoBehaviour
                 {
                     case SlotType.EquipmentWeaponPrimary:
                         // Remove the temporary equipment item first
-                        if (Equipment.WeaponItem != null){
-                            if (Equipment.WeaponItem.GetComponent<Weapon>().IsReady ||
-                                Equipment.WeaponItem.GetComponent<Weapon>().IsAttacking)
+                        if (Equipment.WeaponItem != null)
+                        {
+                            var weapon = Equipment.WeaponItem.GetComponent<Weapon>();
+
+                            if (weapon.IsReady || weapon.IsAttacking)
                             {
-                                    itemContainer.CancelSelection();
-                                    return;
+                                itemContainer.CancelSelection();
+                                return;
                             }
-                            if (Equipment.WeaponItem.IsToBeReplaced())
+
+                            if (weapon.IsToBeReplaced())
                             {
                                 Destroy(Equipment.WeaponItem);  
                             }
                         }
+
                         if (itemContainer.RepresentedItem.GetComponent<Weapon>().IsTwoHanded == false)
                         {
                             // TODO: Special checkif two handed.
                         }
+
                         if (Equipment.WeaponItem == null)
                         {
-                            if (Equipment.TryEquip(itemContainer.RepresentedItem)){
-                                if (itemContainer.slotAttachedTo != null){
+                            if (Equipment.TryEquip(itemContainer.RepresentedItem))
+                            {
+                                if (itemContainer.slotAttachedTo != null)
+                                {
                                     itemContainer.slotAttachedTo.Unassign();
                                 }
+
                                 AssignVisual(itemContainer);
+
                                 itemContainer.isEquipped = true;
                                 itemContainer.equippedBy = Equipment.Owner;
-                            } else {
+                            } 
+                            else 
+                            {
                                 itemContainer.CancelSelection();
                                 return;
                             }
@@ -104,16 +116,21 @@ public class InventorySlot : MonoBehaviour
             {
                 itemContainer.slotAttachedTo.Unassign();
             }
+
             if (Backpack.TryChangeItemPosition(itemContainer.RepresentedItem, backpackSlotIndex))
             {
                 AssignVisual(itemContainer);
+
                 itemContainer.isEquipped = false;
                 itemContainer.equippedBy = null;
             }    
-        } else {
+        } 
+        else 
+        {
             itemContainer.CancelSelection();
             return;
         }
+
         var args = new ItemContainerSlotAttachmentArgs
         {
             ItemContainer = itemContainer,
@@ -135,9 +152,12 @@ public class InventorySlot : MonoBehaviour
                         item.isEquipped = false;
                         item.equippedBy = null;
                         UnassignVisual();
-                    } else {
+                    } 
+                    else 
+                    {
                         return;
                     }
+
                     if (item.RepresentedItem.IsToBeReplaced())
                     {
                         Destroy(item.RepresentedItem);
@@ -148,11 +168,15 @@ public class InventorySlot : MonoBehaviour
                 default:
                     throw new NotImplementedException();
             }  
-        } else {
+        } 
+        else 
+        {
             if (Backpack.TryRemoveItem(attachedItemContainer.RepresentedItem))
             {
                 UnassignVisual();
-            } else {
+            } 
+            else 
+            {
                 return;
             }
         }

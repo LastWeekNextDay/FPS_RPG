@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class AudioManager : MonoBehaviour
@@ -30,11 +28,17 @@ public class AudioManager : MonoBehaviour
     void Start()
     {
         LoadAudioSource();
+
         ItemContainer.OnMouseAttach += (_) => PlayPickupItemContainerSound();
+
         ItemContainer.OnDrop += (_) => PlayDropItemSound();
+
         ItemContainer.OnCancelSelection += (_) => PlayCancelItemContainerPickupSound();
+
         Character.OnPickupItem += (args) => PlayPickupItemSound(args.Source.audioSource);
+
         Character.OnDamageTaken += (args) => PlayHurtSound(args.Target.audioSource);
+
         Character.OnJump += (args) => PlayJumpSound(args.Source.audioSource);
     }
 
@@ -52,6 +56,7 @@ public class AudioManager : MonoBehaviour
         {
             audioSource = _mainAudioSource;
         }
+
         audioSource.PlayOneShot(pickupItemSound);
     }
 
@@ -66,6 +71,7 @@ public class AudioManager : MonoBehaviour
         {
             audioSource = _mainAudioSource;
         }
+
         audioSource.PlayOneShot(hurtSound);
     }
 
@@ -85,6 +91,7 @@ public class AudioManager : MonoBehaviour
         {
             audioSource = _mainAudioSource;
         }
+        
         audioSource.PlayOneShot(jumpSound);
     }
 }
