@@ -13,6 +13,7 @@ public class PlayerController : MonoBehaviour
     public static Action<SecondaryActionArgs> OnSecondaryAction;
     public static Action<UseActionArgs> OnUseAction;
     public static Action<ReadyActionArgs> OnReadyAction;
+    public static Action<ContainerArgs> OnContainerOpen;
     public bool IsControllingAllowed;
 
     void Awake()
@@ -39,7 +40,7 @@ public class PlayerController : MonoBehaviour
 
     void CameraRotation()
     {
-        if (UIManager.Instance.IsInventoryOpen)
+        if (UIManager.Instance.IsInventoryOpen || UIManager.Instance.IsContainerOpen)
         {
             return;
         }
@@ -109,13 +110,30 @@ public class PlayerController : MonoBehaviour
                         var itemC = hit.collider.gameObject.GetComponent<Item>();
                         character.PickupItem(itemC);
                         break;
+                    case "Character":
+                        var charC = hit.collider.gameObject.GetComponent<Character>();
+                        if (charC.IsDead())
+                        {
+                            var container1Args = new ContainerArgs{
+                                Container = charC.Backpack
+                            };
+                            OnContainerOpen?.Invoke(container1Args);
+                        }
+                        break;
+                    case "Container":
+                        var containerC = hit.collider.gameObject.GetComponent<Container>();
+                        var container2Args = new ContainerArgs{
+                            Container = containerC.Backpack
+                        };
+                        OnContainerOpen?.Invoke(container2Args);
+                        break;
                 }
             }
         }
-        var args = new UseActionArgs{
+        var useActionsArgs = new UseActionArgs{
             Source = character,
         };
-        OnUseAction?.Invoke(args);
+        OnUseAction?.Invoke(useActionsArgs);
     }
 
     void ReadyAction()

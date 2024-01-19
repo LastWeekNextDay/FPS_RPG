@@ -13,6 +13,10 @@ public struct JumpArgs
     public Character Source;
 }
 
+public struct ContainerArgs
+{
+    public Backpack Container;
+}
 public struct PickupItemArgs
 {
     public Character Source;

@@ -105,6 +105,11 @@ public class Character : MonoBehaviour
         Debug.DrawRay(ray.origin, ray.direction * distance, color);
     }
 
+    public bool IsDead()
+    {
+        return Health <= 0f;
+    }
+
     public void Jump()
     {
         if (IsGrounded && Energy > _jumpEnergy && _justJumped == false)

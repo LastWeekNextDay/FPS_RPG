@@ -15,6 +15,7 @@ public class UIManager : MonoBehaviour
     private UnityEngine.UI.Slider _invManaBar;
     private UnityEngine.UI.Slider _energyBar;
     private UnityEngine.UI.Slider _invEnergyBar;
+    private GameObject _container;
     private GameObject _inventoryPanel;
     private TMPro.TextMeshProUGUI _invStrengthNumber;
     private TMPro.TextMeshProUGUI _invAgilityNumber;
@@ -42,6 +43,17 @@ public class UIManager : MonoBehaviour
                 return false;
             }
         } 
+    }
+
+    public bool IsContainerOpen {
+        get {
+            if (UnityEssential.TryFindObject("ContainerInventory", out _container))
+            {
+                return _container.activeSelf;
+            } else {
+                return false;
+            }
+        }
     }
 
     void Awake()
@@ -91,10 +103,10 @@ public class UIManager : MonoBehaviour
         };
 
         ItemContainer.OnItemContainerDestruction += (_) => {
-            if (IsInventoryOpen)
+            if (IsInventoryOpen || IsContainerOpen)
             {
-                RefreshBackpackItemsUI(GetPlayerBackpackUI(), _player.Backpack);
-                RefreshEquipmentItemsUI(GetPlayerEquipmentUI(), _player.Equipment);
+                RefreshBackpackItemsUI(GetPlayerInventoryBackpackUI(), _player.Backpack);
+                RefreshEquipmentItemsUI(GetPlayerInventoryEquipmentUI(), _player.Equipment);
             }
         };
 
@@ -105,7 +117,7 @@ public class UIManager : MonoBehaviour
             }
             if (IsInventoryOpen)
             {
-                RefreshBackpackItemsUI(GetPlayerBackpackUI(), args.Source.Backpack);
+                RefreshBackpackItemsUI(GetPlayerInventoryBackpackUI(), args.Source.Backpack);
             }   
         };
 
@@ -126,8 +138,19 @@ public class UIManager : MonoBehaviour
         };
 
         PlayerController.OnSecondaryAction += (args) => {
+            if (IsContainerOpen)
+            {
+                ToggleContainer(null);
+                AllowCursor(false);
+                return;
+            }
             ToggleInventory();
             AllowCursor(IsInventoryOpen);
+        };
+
+        PlayerController.OnContainerOpen += (args) => {
+            ToggleContainer(args.Container);
+            AllowCursor(IsContainerOpen);
         };
     }
 
@@ -397,21 +420,66 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    public void ToggleContainer(Backpack container)
+    {
+        if(_container == null)
+        {
+            if (UnityEssential.TryFindObject("ContainerInventory", out _container))
+            {
+                ContainerActive(!_container.activeSelf, container);
+            }
+        } else {
+            ContainerActive(!_container.activeSelf, container);
+        }
+    }
+
+    void ContainerActive(bool t, Backpack container)
+    {
+        if (t)
+        {
+            _container.SetActive(t);
+            InitializeBackpackItemsUI(GetContainerRightSideBackpackUI(), _player.Backpack);
+            InitializeBackpackItemsUI(GetContainerLeftSideBackpackUI(), container);
+        } else {
+            DetachAllItemsFromBackpackSlots(GetContainerRightSideBackpackUI());
+            DetachAllItemsFromBackpackSlots(GetContainerLeftSideBackpackUI());
+            _container.SetActive(t);
+        }
+    }
+
     void InventoryActivate(bool t)
     {
         if (t)
         {
             _inventoryPanel.SetActive(t);
-            InitializeBackpackItemsUI(GetPlayerBackpackUI(), _player.Backpack);
-            InitializeEquipmentItemsUI(GetPlayerEquipmentUI(), _player.Equipment);
+            InitializeBackpackItemsUI(GetPlayerInventoryBackpackUI(), _player.Backpack);
+            InitializeEquipmentItemsUI(GetPlayerInventoryEquipmentUI(), _player.Equipment);
         } else {
-            DetachAllItemsFromBackpackSlots(GetPlayerBackpackUI());
-            DetachAllItemsFromEquipmentSlots(GetPlayerEquipmentUI());
+            DetachAllItemsFromBackpackSlots(GetPlayerInventoryBackpackUI());
+            DetachAllItemsFromEquipmentSlots(GetPlayerInventoryEquipmentUI());
             _inventoryPanel.SetActive(t);
         }
     }
 
-    public GameObject GetPlayerEquipmentUI()
+    public GameObject GetContainerRightSideBackpackUI()
+    {
+        if (UnityEssential.TryFindObject("BackpackBaseRight", out GameObject backpack))
+        {
+            return backpack;
+        }
+        return null;
+    }
+
+    public GameObject GetContainerLeftSideBackpackUI()
+    {
+        if (UnityEssential.TryFindObject("BackpackBaseLeft", out GameObject backpack))
+        {
+            return backpack;
+        }
+        return null;
+    }
+
+    public GameObject GetPlayerInventoryEquipmentUI()
     {
         if (UnityEssential.TryFindObject("EquipmentBase", out GameObject equipment))
         {
@@ -454,7 +522,7 @@ public class UIManager : MonoBehaviour
         return null;
     }
 
-    public GameObject GetPlayerBackpackUI()
+    public GameObject GetPlayerInventoryBackpackUI()
     {
         if (_inventoryPanel == null)
         {

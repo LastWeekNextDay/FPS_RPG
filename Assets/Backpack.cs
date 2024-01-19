@@ -2,11 +2,13 @@ public class Backpack
 {
     public Item[] Items;
     public Character Owner;
+    public Container containerOf;
 
-    public Backpack(Character owner)
+    public Backpack(Character owner, Container container = null)
     {
         Owner = owner;
         Items = new Item[28];
+        containerOf = container;
     }
 
     public bool TryAddItem(Item item)

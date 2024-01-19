@@ -7,6 +7,7 @@ TagManager:
   - Item
   - Object
   - Character
+  - Container
   layers:
   - Default
   - TransparentFX
