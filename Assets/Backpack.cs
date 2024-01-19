@@ -24,6 +24,29 @@ public class Backpack
         return false;
     }
 
+    public bool TryReplaceItem(Item item, Item newItem)
+    {
+        for (int i = 0; i < Items.Length; i++)
+        {
+            if (Items[i] == item)
+            {
+                Items[i] = newItem;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public bool TryReplaceItemAtPosition(Item newItem, int position)
+    {
+        if (Items[position] == null)
+        {
+            Items[position] = newItem;
+            return true;
+        }
+        return false;
+    }
+
     public bool TryChangeItemPosition(Item item, int toPosition)
     {
         if (Items[toPosition] == null)

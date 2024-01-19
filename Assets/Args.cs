@@ -15,7 +15,7 @@ public struct JumpArgs
 
 public struct ContainerArgs
 {
-    public Backpack Container;
+    public Backpack itemsContainer;
 }
 public struct PickupItemArgs
 {
@@ -105,5 +105,6 @@ public struct CancelSelectionArgs
 
 public struct ItemContainerDestructionArgs
 {
+    public InventorySlot Slot;
     public ItemContainer ItemContainer;
 }

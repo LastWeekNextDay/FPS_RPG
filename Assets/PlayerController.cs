@@ -115,7 +115,7 @@ public class PlayerController : MonoBehaviour
                         if (charC.IsDead())
                         {
                             var container1Args = new ContainerArgs{
-                                Container = charC.Backpack
+                                itemsContainer = charC.Backpack
                             };
                             OnContainerOpen?.Invoke(container1Args);
                         }
@@ -123,7 +123,7 @@ public class PlayerController : MonoBehaviour
                     case "Container":
                         var containerC = hit.collider.gameObject.GetComponent<Container>();
                         var container2Args = new ContainerArgs{
-                            Container = containerC.Backpack
+                            itemsContainer = containerC.Backpack
                         };
                         OnContainerOpen?.Invoke(container2Args);
                         break;

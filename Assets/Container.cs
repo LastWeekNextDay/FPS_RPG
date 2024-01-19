@@ -14,9 +14,12 @@ public class Container : MonoBehaviour
             items = new List<Item>();
         }
         Backpack = new Backpack(null, this);
-        foreach (var item in items)
+        for (int i = 0; i < items.Count; i++)
         {
-            Backpack.TryAddItem(item);
+            Backpack.TryAddItem(items[i]);
+            items[i].transform.SetParent(transform);
+            items[i].transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+            items[i].gameObject.SetActive(false);
         }
     }
 }

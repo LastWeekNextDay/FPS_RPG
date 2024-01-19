@@ -16,6 +16,7 @@ public class UIManager : MonoBehaviour
     private UnityEngine.UI.Slider _energyBar;
     private UnityEngine.UI.Slider _invEnergyBar;
     private GameObject _container;
+    private Backpack _openedContainer;
     private GameObject _inventoryPanel;
     private TMPro.TextMeshProUGUI _invStrengthNumber;
     private TMPro.TextMeshProUGUI _invAgilityNumber;
@@ -102,11 +103,16 @@ public class UIManager : MonoBehaviour
             ResetCursor();
         };
 
-        ItemContainer.OnItemContainerDestruction += (_) => {
-            if (IsInventoryOpen || IsContainerOpen)
+        ItemContainer.OnItemContainerDestruction += (args) => {
+            if (IsInventoryOpen)
             {
                 RefreshBackpackItemsUI(GetPlayerInventoryBackpackUI(), _player.Backpack);
                 RefreshEquipmentItemsUI(GetPlayerInventoryEquipmentUI(), _player.Equipment);
+            }
+            if (IsContainerOpen)
+            {
+                RefreshBackpackItemsUI(GetContainerRightSideBackpackUI(), _player.Backpack);
+                RefreshBackpackItemsUI(GetContainerLeftSideBackpackUI(), _openedContainer);
             }
         };
 
@@ -149,7 +155,7 @@ public class UIManager : MonoBehaviour
         };
 
         PlayerController.OnContainerOpen += (args) => {
-            ToggleContainer(args.Container);
+            ToggleContainer(args.itemsContainer);
             AllowCursor(IsContainerOpen);
         };
     }
@@ -438,9 +444,11 @@ public class UIManager : MonoBehaviour
         if (t)
         {
             _container.SetActive(t);
+            _openedContainer = container;
             InitializeBackpackItemsUI(GetContainerRightSideBackpackUI(), _player.Backpack);
-            InitializeBackpackItemsUI(GetContainerLeftSideBackpackUI(), container);
+            InitializeBackpackItemsUI(GetContainerLeftSideBackpackUI(), _openedContainer);
         } else {
+            _openedContainer = null;
             DetachAllItemsFromBackpackSlots(GetContainerRightSideBackpackUI());
             DetachAllItemsFromBackpackSlots(GetContainerLeftSideBackpackUI());
             _container.SetActive(t);

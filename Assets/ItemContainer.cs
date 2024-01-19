@@ -106,15 +106,25 @@ public class ItemContainer : MonoBehaviour
 
     public void DestroyItemContainter()
     {
+        var args = new ItemContainerDestructionArgs
+        {
+            Slot = slotAttachedTo,
+            ItemContainer = this
+        };
         if (RepresentedItem != null)
         {
-            Character ownerOfItem = null;
+            GameObject ownerOfItem = null;
             if (slotAttachedTo != null)
             {
                 Character owner = null;
+                Container container = null;
                 if (slotAttachedTo.Backpack != null)
                 {
                     owner = slotAttachedTo.Backpack.Owner;
+                    if (owner == null)
+                    {
+                        container = slotAttachedTo.Backpack.containerOf;
+                    }
                 } else if (slotAttachedTo.Equipment != null)
                 {
                     owner = slotAttachedTo.Equipment.Owner;
@@ -123,7 +133,13 @@ public class ItemContainer : MonoBehaviour
                 {
                     if (owner.Backpack.TryGetItemIndex(RepresentedItem, out _) || equippedBy == owner)
                     {
-                        ownerOfItem = owner;
+                        ownerOfItem = owner.transform.gameObject;
+                    }
+                } else if (container != null)
+                {
+                    if (container.Backpack.TryGetItemIndex(RepresentedItem, out _))
+                    {
+                        ownerOfItem = container.gameObject;
                     }
                 }
                 slotAttachedTo.UnassignVisual();
@@ -136,10 +152,6 @@ public class ItemContainer : MonoBehaviour
             }
             RepresentedItem = null;
         }
-        var args = new ItemContainerDestructionArgs
-        {
-            ItemContainer = this
-        };
         OnItemContainerDestruction?.Invoke(args);
         Destroy(gameObject);
     }
@@ -283,7 +295,10 @@ public class ItemContainer : MonoBehaviour
         {
             fromWho.Equipment.TryUnequip(RepresentedItem);
         } else {
-            fromWho.Backpack.TryRemoveItem(RepresentedItem);
+            if (fromWho.Backpack.TryGetItemIndex(RepresentedItem, out _))
+            {
+                fromWho.Backpack.TryRemoveItem(RepresentedItem);
+            }   
         }
         SetActiveInWorld(true, where);
         var args = new DropArgs
