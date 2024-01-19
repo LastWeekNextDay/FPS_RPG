@@ -78,8 +78,11 @@ public class Character : MonoBehaviour
     {
         Debugging();
         CalculateGrounded();
-        CalculateStatusEffectsTimings();
-        ConstantlyCalculatingStats();
+        if (IsDead() == false)
+        {
+            CalculateStatusEffectsTimings();
+            ConstantlyCalculatingStats();
+        }
     }
 
     void FixedUpdate()
