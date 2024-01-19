@@ -7,8 +7,8 @@ public class AudioManager : MonoBehaviour
     public static AudioManager Instance { get; private set; }
     private AudioSource _mainAudioSource;
     public AudioClip pickupItemSound;
-    public AudioClip pickupInventoryItemSound;
-    public AudioClip cancelInventoryItemPickupSound;
+    public AudioClip pickupItemContainerSound;
+    public AudioClip cancelItemContainerPickupSound;
     public AudioClip hurtSound;
     public AudioClip dropItemSound;
     public AudioClip jumpSound;
@@ -30,9 +30,9 @@ public class AudioManager : MonoBehaviour
     void Start()
     {
         LoadAudioSource();
-        InventoryItem.OnMouseAttach += (_) => PlayPickupInventoryItemSound();
-        InventoryItem.OnDrop += (_) => PlayDropItemSound();
-        InventoryItem.OnCancelSelection += (_) => PlayCancelInventoryItemPickupSound();
+        ItemContainer.OnMouseAttach += (_) => PlayPickupItemContainerSound();
+        ItemContainer.OnDrop += (_) => PlayDropItemSound();
+        ItemContainer.OnCancelSelection += (_) => PlayCancelItemContainerPickupSound();
         Character.OnPickupItem += (args) => PlayPickupItemSound(args.Source.audioSource);
         Character.OnDamageTaken += (args) => PlayHurtSound(args.Target.audioSource);
         Character.OnJump += (args) => PlayJumpSound(args.Source.audioSource);
@@ -55,9 +55,9 @@ public class AudioManager : MonoBehaviour
         audioSource.PlayOneShot(pickupItemSound);
     }
 
-    public void PlayPickupInventoryItemSound()
+    public void PlayPickupItemContainerSound()
     {
-        _mainAudioSource.PlayOneShot(pickupInventoryItemSound);
+        _mainAudioSource.PlayOneShot(pickupItemContainerSound);
     }
 
     public void PlayHurtSound(AudioSource audioSource = null)
@@ -74,9 +74,9 @@ public class AudioManager : MonoBehaviour
         _mainAudioSource.PlayOneShot(dropItemSound);
     }
 
-    public void PlayCancelInventoryItemPickupSound()
+    public void PlayCancelItemContainerPickupSound()
     {
-        _mainAudioSource.PlayOneShot(cancelInventoryItemPickupSound);
+        _mainAudioSource.PlayOneShot(cancelItemContainerPickupSound);
     }
 
     public void PlayJumpSound(AudioSource audioSource = null)

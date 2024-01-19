@@ -73,28 +73,33 @@ public struct DropArgs
 public struct EquipArgs
 {
     public Character Source;
-    public InventoryItem InventoryItem;
+    public ItemContainer ItemContainer;
     public InventorySlot Slot;
 }
 
 public struct UnequipArgs
 {
     public Character Source;
-    public InventoryItem InventoryItem;
+    public ItemContainer ItemContainer;
     public InventorySlot Slot;
 }
 
 public struct MouseAttachArgs
 {
-    public InventoryItem InventoryItem;
+    public ItemContainer ItemContainer;
 }
 
 public struct MouseDetachArgs
 {
-    public InventoryItem InventoryItem;
+    public ItemContainer ItemContainer;
 }
 
 public struct CancelSelectionArgs
 {
-    public InventoryItem InventoryItem;
+    public ItemContainer ItemContainer;
+}
+
+public struct ItemContainerDestructionArgs
+{
+    public ItemContainer ItemContainer;
 }

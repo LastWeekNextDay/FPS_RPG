@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class InventoryItem : MonoBehaviour
+public class ItemContainer : MonoBehaviour
 {
     public Item RepresentedItem { get; private set; }
     [NonSerialized] public bool isEquipped;
@@ -19,6 +19,7 @@ public class InventoryItem : MonoBehaviour
     public static Action<MouseAttachArgs> OnMouseAttach;
     public static Action<MouseDetachArgs> OnMouseDetach;
     public static Action<CancelSelectionArgs> OnCancelSelection;
+    public static Action<ItemContainerDestructionArgs> OnItemContainerDestruction;
     public static Action<DropArgs> OnDrop;
     public static Action<EquipArgs> OnEquip;
     public static Action<UnequipArgs> OnUnequip;
@@ -50,7 +51,7 @@ public class InventoryItem : MonoBehaviour
         return isEquipment;
     }
 
-    public void AttachItemAsInventoryItem(Item item)
+    public void AttachItemToItemContainer(Item item)
     {
         RepresentedItem = item;
         SetActiveInWorld(false, parent: transform);
@@ -103,13 +104,43 @@ public class InventoryItem : MonoBehaviour
         }   
     }
 
-    public void DestroyInventoryItem()
+    public void DestroyItemContainter()
     {
         if (RepresentedItem != null)
         {
-            RepresentedItem.transform.SetParent(null);
+            Character ownerOfItem = null;
+            if (slotAttachedTo != null)
+            {
+                Character owner = null;
+                if (slotAttachedTo.Backpack != null)
+                {
+                    owner = slotAttachedTo.Backpack.Owner;
+                } else if (slotAttachedTo.Equipment != null)
+                {
+                    owner = slotAttachedTo.Equipment.Owner;
+                }
+                if (owner != null)
+                {
+                    if (owner.Backpack.TryGetItemIndex(RepresentedItem, out _) || equippedBy == owner)
+                    {
+                        ownerOfItem = owner;
+                    }
+                }
+                slotAttachedTo.UnassignVisual();
+            }
+            if (ownerOfItem != null)
+            {
+                RepresentedItem.transform.SetParent(ownerOfItem.transform);
+            } else {
+                RepresentedItem.transform.SetParent(null);
+            }
             RepresentedItem = null;
         }
+        var args = new ItemContainerDestructionArgs
+        {
+            ItemContainer = this
+        };
+        OnItemContainerDestruction?.Invoke(args);
         Destroy(gameObject);
     }
 
@@ -148,7 +179,7 @@ public class InventoryItem : MonoBehaviour
         transform.SetSiblingIndex(transform.parent.childCount - 1);
         var args = new MouseAttachArgs
         {
-            InventoryItem = this
+            ItemContainer = this
         };
         OnMouseAttach?.Invoke(args);
     }
@@ -239,21 +270,21 @@ public class InventoryItem : MonoBehaviour
 
         var args = new MouseDetachArgs
         {
-            InventoryItem = this
+            ItemContainer = this
         };
         OnMouseDetach?.Invoke(args);
 
-        var Player = GameObject.Find("Player");
-        Drop(Player.GetComponent<Character>(), CalculateForwardPositionUsingCamera(Player.transform.position));
+        Drop(playerChar, CalculateForwardPositionUsingCamera(playerChar.transform.position));
     }
 
     public void Drop(Character fromWho, Vector3 where)
     {
-        if (slotAttachedTo != null)
+        if (equippedBy == fromWho)
         {
-            slotAttachedTo.Unassign();
+            fromWho.Equipment.TryUnequip(RepresentedItem);
+        } else {
+            fromWho.Backpack.TryRemoveItem(RepresentedItem);
         }
-
         SetActiveInWorld(true, where);
         var args = new DropArgs
         {
@@ -262,7 +293,7 @@ public class InventoryItem : MonoBehaviour
             Position = where
         };
         OnDrop?.Invoke(args);
-        DestroyInventoryItem();
+        DestroyItemContainter();
     }
 
     Vector3 CalculateForwardPositionUsingCamera(Vector3 fromWhere, float distance = 1f)
@@ -296,16 +327,16 @@ public class InventoryItem : MonoBehaviour
         bool itemReadded = false;
         if (slotAttachedTo != null)
         {
-            if (slotAttachedTo.IsEquipmentSlot() == false)
+            if (slotAttachedTo.IsEquipmentSlot())
             {
-                slotAttachedTo.AssignVisual(this);
-            } else {
                 if (playerChar.Backpack.TryAddItem(RepresentedItem) == false)
                 {
                     Drop(playerChar, CalculateForwardPositionUsingCamera(player.transform.position));
                 } else {
                     itemReadded = true;   
                 }
+            } else {
+                itemReadded = true;
             }
         } else {
             if (playerChar.Backpack.TryAddItem(RepresentedItem) == false)
@@ -318,13 +349,13 @@ public class InventoryItem : MonoBehaviour
 
         var args = new CancelSelectionArgs
         {
-            InventoryItem = this
+            ItemContainer = this
         };
         OnCancelSelection?.Invoke(args); 
 
         if (itemReadded)
         {
-            DestroyInventoryItem();
+            DestroyItemContainter();
         }
     }
 

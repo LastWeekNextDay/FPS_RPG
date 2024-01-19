@@ -7,7 +7,7 @@ using UnityEngine;
 public class UIManager : MonoBehaviour
 {
     public static UIManager Instance { get; private set; }
-    public GameObject inventoryItemPrefab;
+    public GameObject itemContainerPrefab;
 
     private UnityEngine.UI.Slider _healthBar;
     private UnityEngine.UI.Slider _invHealthBar;
@@ -90,13 +90,11 @@ public class UIManager : MonoBehaviour
             ResetCursor();
         };
 
-        InventoryItem.OnCancelSelection += (_) => {
-            var player = GameObject.Find("Player");
-            var playerChar = player.GetComponent<Character>();
+        ItemContainer.OnItemContainerDestruction += (_) => {
             if (IsInventoryOpen)
             {
-                RefreshBackpackItemsUI(GetPlayerBackpackUI(), playerChar.Backpack);
-                RefreshEquipmentItemsUI(GetPlayerEquipmentUI(), playerChar.Equipment);
+                RefreshBackpackItemsUI(GetPlayerBackpackUI(), _player.Backpack);
+                RefreshEquipmentItemsUI(GetPlayerEquipmentUI(), _player.Equipment);
             }
         };
 
@@ -407,7 +405,7 @@ public class UIManager : MonoBehaviour
             InitializeBackpackItemsUI(GetPlayerBackpackUI(), _player.Backpack);
             InitializeEquipmentItemsUI(GetPlayerEquipmentUI(), _player.Equipment);
         } else {
-            DetachAllItemsFromBacpackSlots(GetPlayerBackpackUI());
+            DetachAllItemsFromBackpackSlots(GetPlayerBackpackUI());
             DetachAllItemsFromEquipmentSlots(GetPlayerEquipmentUI());
             _inventoryPanel.SetActive(t);
         }
@@ -492,7 +490,7 @@ public class UIManager : MonoBehaviour
             foreach (Transform child in row.transform)
             {
                 var slot = child.gameObject.GetComponent<InventorySlot>();
-                if (slot.attachedInventoryItem == null)
+                if (slot.attachedItemContainer == null)
                 {
                     return slot;
                 }
@@ -517,7 +515,7 @@ public class UIManager : MonoBehaviour
                 case SlotType.EquipmentWeaponPrimary:
                     if (equipment.WeaponItem != null && equipment.WeaponItem.IsToBeReplaced() == false)
                     {
-                        TryToAddToSlotUI(slot, MakeItemIntoInventoryItemUI(equipment.WeaponItem));
+                        TryToAddToSlotUI(slot, MakeItemIntoItemContainerUI(equipment.WeaponItem));
                     }
                     break;
                 default:
@@ -547,7 +545,7 @@ public class UIManager : MonoBehaviour
                 slot.backpackSlotIndex = UIIndex;
                 if (backpack.Items[UIIndex] != null)
                 {
-                    TryToAddToSlotUI(slot, MakeItemIntoInventoryItemUI(backpack.Items[UIIndex]));
+                    TryToAddToSlotUI(slot, MakeItemIntoItemContainerUI(backpack.Items[UIIndex]));
                 }
                 UIIndex++;
             }
@@ -573,14 +571,14 @@ public class UIManager : MonoBehaviour
                 var slot = child.gameObject.GetComponent<InventorySlot>();
                 if (backpack.Items[UIIndex] != null)
                 {
-                    if (slot.attachedInventoryItem == null)
+                    if (slot.attachedItemContainer == null)
                     {
-                        TryToAddToSlotUI(slot, MakeItemIntoInventoryItemUI(backpack.Items[UIIndex]));
+                        TryToAddToSlotUI(slot, MakeItemIntoItemContainerUI(backpack.Items[UIIndex]));
                     }   
                 }
                 else
                 {
-                    if (slot.attachedInventoryItem != null)
+                    if (slot.attachedItemContainer != null)
                     {
                         TryToRemoveFromSlotUI(slot);
                     }
@@ -604,14 +602,14 @@ public class UIManager : MonoBehaviour
                 case SlotType.EquipmentWeaponPrimary:
                     if (equipment.WeaponItem != null && equipment.WeaponItem.IsToBeReplaced() == false)
                     {
-                        if (slot.attachedInventoryItem == null)
+                        if (slot.attachedItemContainer == null)
                         {
-                            TryToAddToSlotUI(slot, MakeItemIntoInventoryItemUI(equipment.WeaponItem));
+                            TryToAddToSlotUI(slot, MakeItemIntoItemContainerUI(equipment.WeaponItem));
                         }
                     }
                     else if (equipment.WeaponItem == null || equipment.WeaponItem.IsToBeReplaced() == true)
                     {
-                        if (slot.attachedInventoryItem != null)
+                        if (slot.attachedItemContainer != null)
                         {
                             TryToRemoveFromSlotUI(slot);
                         }
@@ -621,7 +619,7 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    void DetachAllItemsFromBacpackSlots(GameObject backpackUI)
+    void DetachAllItemsFromBackpackSlots(GameObject backpackUI)
     {
         if (backpackUI == null)
         {
@@ -707,13 +705,13 @@ public class UIManager : MonoBehaviour
         return -1;
     }
 
-    public bool TryToAddToSlotUI(InventorySlot slot, InventoryItem item)
+    public bool TryToAddToSlotUI(InventorySlot slot, ItemContainer item)
     {
         if (slot == null || item == null)
         {
             return false;
         }
-        if (slot.attachedInventoryItem == null)
+        if (slot.attachedItemContainer == null)
         {
             slot.AssignVisual(item);
             return true;
@@ -727,24 +725,23 @@ public class UIManager : MonoBehaviour
         {
             return false;
         }
-        if (slot.attachedInventoryItem != null)
+        if (slot.attachedItemContainer != null)
         {
-            var invItem = slot.attachedInventoryItem;
-            slot.UnassignVisual();
-            invItem.DestroyInventoryItem();
+            var itemContainer = slot.attachedItemContainer;
+            itemContainer.DestroyItemContainter();
             return true;
         }
         return false;
     }
 
-    public InventoryItem MakeItemIntoInventoryItemUI(Item item)
+    public ItemContainer MakeItemIntoItemContainerUI(Item item)
     {
         if (item == null)
         {
             return null;
         }
-        var invItem = Instantiate(inventoryItemPrefab, Vector3.zero, Quaternion.identity).GetComponent<InventoryItem>();
-        invItem.AttachItemAsInventoryItem(item);
-        return invItem;
+        var itemContainer = Instantiate(itemContainerPrefab, Vector3.zero, Quaternion.identity).GetComponent<ItemContainer>();
+        itemContainer.AttachItemToItemContainer(item);
+        return itemContainer;
     }
 }

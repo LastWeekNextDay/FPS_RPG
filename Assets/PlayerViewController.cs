@@ -14,7 +14,7 @@ public class PlayerViewController : MonoBehaviour
 
     private float _sensitivity;
 
-    public void MoveAround()
+    void Start()
     {
         if (_camera == null)
         {
@@ -32,6 +32,10 @@ public class PlayerViewController : MonoBehaviour
                 player = player_obj.GetComponent<Character>();
             }
         }
+    }
+
+    public void MoveAround()
+    {
         _sensitivity = PlayerPrefs.GetFloat("MouseSensitivity", 1f);
         var mouse_x = Input.GetAxis("Mouse X");
         _camera.transform.RotateAround(player.transform.position, player.transform.up, mouse_x * Time.deltaTime * _sensitivity);

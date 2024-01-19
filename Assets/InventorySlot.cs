@@ -16,23 +16,23 @@ public class InventorySlot : MonoBehaviour
 {
     [NonSerialized] public int backpackSlotIndex;
     public SlotType slotType;
-    public InventoryItem attachedInventoryItem;
+    public ItemContainer attachedItemContainer;
     public Backpack Backpack;
     public Equipment Equipment;
 
-    public void AssignVisual(InventoryItem item)
+    public void AssignVisual(ItemContainer item)
     {
-        attachedInventoryItem = item;
-        attachedInventoryItem.transform.SetParent(transform);
-        attachedInventoryItem.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
-        attachedInventoryItem.transform.localScale = Vector3.one;
-        attachedInventoryItem.slotAttachedTo = this;
+        attachedItemContainer = item;
+        attachedItemContainer.transform.SetParent(transform);
+        attachedItemContainer.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+        attachedItemContainer.transform.localScale = Vector3.one;
+        attachedItemContainer.slotAttachedTo = this;
     }
 
     public void UnassignVisual()
     {
-        attachedInventoryItem.slotAttachedTo = null;
-        attachedInventoryItem = null;
+        attachedItemContainer.slotAttachedTo = null;
+        attachedItemContainer = null;
     }
 
     public bool IsEquipmentSlot()
@@ -51,11 +51,11 @@ public class InventorySlot : MonoBehaviour
         }
     }
 
-    public void Assign(InventoryItem invItem)
+    public void Assign(ItemContainer itemContainer)
     {
         if (IsEquipmentSlot())
         {
-            if (attachedInventoryItem == null || attachedInventoryItem.RepresentedItem.IsToBeReplaced())
+            if (attachedItemContainer == null || attachedItemContainer.RepresentedItem.IsToBeReplaced())
             {
                 switch (slotType)
                 {
@@ -65,7 +65,7 @@ public class InventorySlot : MonoBehaviour
                             if (Equipment.WeaponItem.GetComponent<Weapon>().IsReady ||
                                 Equipment.WeaponItem.GetComponent<Weapon>().IsAttacking)
                             {
-                                    invItem.CancelSelection();
+                                    itemContainer.CancelSelection();
                                     return;
                             }
                             if (Equipment.WeaponItem.IsToBeReplaced())
@@ -73,22 +73,22 @@ public class InventorySlot : MonoBehaviour
                                 Destroy(Equipment.WeaponItem);  
                             }
                         }
-                        if (invItem.RepresentedItem.GetComponent<Weapon>().IsTwoHanded == false)
+                        if (itemContainer.RepresentedItem.GetComponent<Weapon>().IsTwoHanded == false)
                         {
                             // TODO: Special checkif two handed.
                         }
                         if (Equipment.WeaponItem == null)
                         {
-                            if (Equipment.TryEquip(invItem.RepresentedItem)){
-                                if (invItem.slotAttachedTo != null){
-                                    invItem.slotAttachedTo.Unassign();
+                            if (Equipment.TryEquip(itemContainer.RepresentedItem)){
+                                if (itemContainer.slotAttachedTo != null){
+                                    itemContainer.slotAttachedTo.Unassign();
                                 }
-                                AssignVisual(invItem);
-                                invItem.isEquipped = true;
-                                invItem.equippedBy = Equipment.Owner;
+                                AssignVisual(itemContainer);
+                                itemContainer.isEquipped = true;
+                                itemContainer.equippedBy = Equipment.Owner;
                                 return;
                             } else {
-                                invItem.CancelSelection();
+                                itemContainer.CancelSelection();
                                 return;
                             }
                         }
@@ -98,20 +98,20 @@ public class InventorySlot : MonoBehaviour
                 }
             }
         } 
-        else if (attachedInventoryItem == null)
+        else if (attachedItemContainer == null)
         {
-            if (invItem.slotAttachedTo != null)
+            if (itemContainer.slotAttachedTo != null)
             {
-                invItem.slotAttachedTo.Unassign();
+                itemContainer.slotAttachedTo.Unassign();
             }
-            if (Backpack.TryChangeItemPosition(invItem.RepresentedItem, backpackSlotIndex))
+            if (Backpack.TryChangeItemPosition(itemContainer.RepresentedItem, backpackSlotIndex))
             {
-                AssignVisual(invItem);
-                invItem.isEquipped = false;
-                invItem.equippedBy = null;
+                AssignVisual(itemContainer);
+                itemContainer.isEquipped = false;
+                itemContainer.equippedBy = null;
             }    
         } else {
-            invItem.CancelSelection();
+            itemContainer.CancelSelection();
         }
     }
 
@@ -122,7 +122,7 @@ public class InventorySlot : MonoBehaviour
             switch (slotType)
             {
                 case SlotType.EquipmentWeaponPrimary:
-                    var item = attachedInventoryItem;
+                    var item = attachedItemContainer;
                     if (Equipment.TryUnequip(item.RepresentedItem.GetComponent<Weapon>()))
                     {
                         item.isEquipped = false;
@@ -142,7 +142,7 @@ public class InventorySlot : MonoBehaviour
                     throw new NotImplementedException();
             }  
         } else {
-            if (Backpack.TryRemoveItem(attachedInventoryItem.RepresentedItem))
+            if (Backpack.TryRemoveItem(attachedItemContainer.RepresentedItem))
             {
                 UnassignVisual();
             } else {
