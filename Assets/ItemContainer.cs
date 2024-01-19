@@ -19,7 +19,6 @@ public class ItemContainer : MonoBehaviour
     public static Action<MouseAttachArgs> OnMouseAttach;
     public static Action<MouseDetachArgs> OnMouseDetach;
     public static Action<CancelSelectionArgs> OnCancelSelection;
-    public static Action<ItemContainerDestructionArgs> OnItemContainerDestruction;
     public static Action<DropArgs> OnDrop;
     public static Action<EquipArgs> OnEquip;
     public static Action<UnequipArgs> OnUnequip;
@@ -105,30 +104,30 @@ public class ItemContainer : MonoBehaviour
     }
 
     public void DestroyItemContainter()
-    {
-        var args = new ItemContainerDestructionArgs
-        {
-            Slot = slotAttachedTo,
-            ItemContainer = this
-        };
+    {        
         if (RepresentedItem != null)
         {
             GameObject ownerOfItem = null;
+
             if (slotAttachedTo != null)
             {
                 Character owner = null;
                 Container container = null;
+
                 if (slotAttachedTo.Backpack != null)
                 {
                     owner = slotAttachedTo.Backpack.Owner;
+                    
                     if (owner == null)
                     {
                         container = slotAttachedTo.Backpack.containerOf;
                     }
-                } else if (slotAttachedTo.Equipment != null)
+                } 
+                else if (slotAttachedTo.Equipment != null)
                 {
                     owner = slotAttachedTo.Equipment.Owner;
                 }
+
                 if (owner != null)
                 {
                     if (owner.Backpack.TryGetItemIndex(RepresentedItem, out _) || equippedBy == owner)
@@ -142,17 +141,22 @@ public class ItemContainer : MonoBehaviour
                         ownerOfItem = container.gameObject;
                     }
                 }
+
                 slotAttachedTo.UnassignVisual();
             }
+
             if (ownerOfItem != null)
             {
                 RepresentedItem.transform.SetParent(ownerOfItem.transform);
-            } else {
+            } 
+            else 
+            {
                 RepresentedItem.transform.SetParent(null);
             }
+
             RepresentedItem = null;
         }
-        OnItemContainerDestruction?.Invoke(args);
+
         Destroy(gameObject);
     }
 
@@ -295,10 +299,7 @@ public class ItemContainer : MonoBehaviour
         {
             fromWho.Equipment.TryUnequip(RepresentedItem);
         } else {
-            if (fromWho.Backpack.TryGetItemIndex(RepresentedItem, out _))
-            {
-                fromWho.Backpack.TryRemoveItem(RepresentedItem);
-            }   
+            slotAttachedTo?.Backpack?.TryRemoveItem(RepresentedItem); 
         }
         SetActiveInWorld(true, where);
         var args = new DropArgs
@@ -366,11 +367,15 @@ public class ItemContainer : MonoBehaviour
         {
             ItemContainer = this
         };
-        OnCancelSelection?.Invoke(args); 
+         
 
         if (itemReadded)
         {
+            slotAttachedTo.UnassignVisual();
+            OnCancelSelection?.Invoke(args);
             DestroyItemContainter();
+        } else {
+            OnCancelSelection?.Invoke(args);
         }
     }
 

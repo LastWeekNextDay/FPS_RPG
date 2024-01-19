@@ -19,13 +19,14 @@ public class InventorySlot : MonoBehaviour
     public ItemContainer attachedItemContainer;
     public Backpack Backpack;
     public Equipment Equipment;
+    public static Action<ItemContainerSlotAttachmentArgs> OnItemContainerSlotAttachment;
 
     public void AssignVisual(ItemContainer item)
     {
+        item.transform.SetParent(transform);
+        item.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+        item.transform.localScale = Vector3.one;
         attachedItemContainer = item;
-        attachedItemContainer.transform.SetParent(transform);
-        attachedItemContainer.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
-        attachedItemContainer.transform.localScale = Vector3.one;
         attachedItemContainer.slotAttachedTo = this;
     }
 
@@ -86,13 +87,12 @@ public class InventorySlot : MonoBehaviour
                                 AssignVisual(itemContainer);
                                 itemContainer.isEquipped = true;
                                 itemContainer.equippedBy = Equipment.Owner;
-                                return;
                             } else {
                                 itemContainer.CancelSelection();
                                 return;
                             }
                         }
-                        return; 
+                        break;
                     default:
                         throw new NotImplementedException();
                 }
@@ -112,7 +112,14 @@ public class InventorySlot : MonoBehaviour
             }    
         } else {
             itemContainer.CancelSelection();
+            return;
         }
+        var args = new ItemContainerSlotAttachmentArgs
+        {
+            ItemContainer = itemContainer,
+            Slot = this
+        };
+        OnItemContainerSlotAttachment?.Invoke(args);
     }
 
     public void Unassign()

@@ -103,18 +103,9 @@ public class UIManager : MonoBehaviour
             ResetCursor();
         };
 
-        ItemContainer.OnItemContainerDestruction += (args) => {
-            if (IsInventoryOpen)
-            {
-                RefreshBackpackItemsUI(GetPlayerInventoryBackpackUI(), _player.Backpack);
-                RefreshEquipmentItemsUI(GetPlayerInventoryEquipmentUI(), _player.Equipment);
-            }
-            if (IsContainerOpen)
-            {
-                RefreshBackpackItemsUI(GetContainerRightSideBackpackUI(), _player.Backpack);
-                RefreshBackpackItemsUI(GetContainerLeftSideBackpackUI(), _openedContainer);
-            }
-        };
+        InventorySlot.OnItemContainerSlotAttachment += (_) => RefreshItemHoldingUIs();
+
+        ItemContainer.OnCancelSelection += (_) => RefreshItemHoldingUIs();
 
         Character.OnPickupItem += (args) => {
             if (args.Source.GetComponent<PlayerController>() == null)
@@ -158,6 +149,20 @@ public class UIManager : MonoBehaviour
             ToggleContainer(args.itemsContainer);
             AllowCursor(IsContainerOpen);
         };
+    }
+
+    void RefreshItemHoldingUIs()
+    {
+        if (IsInventoryOpen)
+        {
+            RefreshBackpackItemsUI(GetPlayerInventoryBackpackUI(), _player.Backpack);
+            RefreshEquipmentItemsUI(GetPlayerInventoryEquipmentUI(), _player.Equipment);
+        }
+        if (IsContainerOpen)
+        {
+            RefreshBackpackItemsUI(GetContainerRightSideBackpackUI(), _player.Backpack);
+            RefreshBackpackItemsUI(GetContainerLeftSideBackpackUI(), _openedContainer);
+        }
     }
 
     public void AllowCursor(bool b)

@@ -103,7 +103,7 @@ public struct CancelSelectionArgs
     public ItemContainer ItemContainer;
 }
 
-public struct ItemContainerDestructionArgs
+public struct ItemContainerSlotAttachmentArgs
 {
     public InventorySlot Slot;
     public ItemContainer ItemContainer;
